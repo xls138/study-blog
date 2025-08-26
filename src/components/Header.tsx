@@ -14,11 +14,11 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-slate-900 text-white">
+    <header className="bg-background text-foreground border-b border-border">
       <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center">
-          <a href="#" className="text-xl font-bold">
+        <div>
+          <a href="#">
             <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
           </a>
         </div>
@@ -29,7 +29,7 @@ export default function Header() {
             <a
               key={item.name}
               href={item.href}
-              className="hover:text-slate-300 transition-colors"
+              className="hover:text-muted-foreground transition-colors"
             >
               {item.name}
             </a>
@@ -38,7 +38,7 @@ export default function Header() {
 
         {/* Desktop Login */}
         <div className="hidden md:flex">
-          <a href="#" className="hover:text-slate-300 transition-colors">
+          <a href="#" className="hover:text-muted-foreground transition-colors">
             Log in →
           </a>
         </div>
@@ -54,12 +54,12 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-slate-800 px-6 py-4 space-y-4">
+        <div className="md:hidden bg-secondary px-6 py-4 space-y-4">
           {navigation.map((item) => (
             <a
               key={item.name}
               href={item.href}
-              className="block py-2 hover:text-slate-300 transition-colors"
+              className="block py-2 hover:text-muted-foreground transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               {item.name}
@@ -67,7 +67,7 @@ export default function Header() {
           ))}
           <a
             href="#"
-            className="block py-2 border-t border-slate-700 pt-4 hover:text-slate-300 transition-colors"
+            className="block py-2 border-t border-border pt-4 hover:text-muted-foreground transition-colors"
             onClick={() => setMobileMenuOpen(false)}
           >
             Log in
