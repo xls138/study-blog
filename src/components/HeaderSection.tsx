@@ -46,7 +46,7 @@ export default function HeaderSection() {
           {cards.map((card) => (
             <div
               key={card.name}
-              className="flex gap-x-4 rounded-lg bg-card p-6 shadow-sm border border-border"
+              className="flex gap-x-4 rounded-lg bg-card p-6 shadow-sm border border-border hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
             >
               <card.icon className="h-6 w-6 flex-none text-primary" />
               <div>

@@ -34,6 +34,17 @@ const posts = [
       imageUrl: "/authors/author3.webp",
     },
   },
+  {
+    id: 4,
+    title: "Next.js Fundamentals, v4",
+    href: "/courses/nextjs-fundamentals-v4",
+    imageUrl: "/courses/course4.webp",
+    date: "April 3, 2025",
+    author: {
+      name: "Scott Moss",
+      imageUrl: "/authors/author4.webp",
+    },
+  },
 ];
 
 export default function CoursesSection() {
@@ -44,7 +55,7 @@ export default function CoursesSection() {
         <div className="text-center">
           <h2 className="text-4xl font-bold text-foreground">Courses</h2>
           <p className="mt-2 text-lg text-muted-foreground">
-            Learn From the Best Teachers.
+            世界级技术导师精品课程，打造国际化开发视野
           </p>
         </div>
 

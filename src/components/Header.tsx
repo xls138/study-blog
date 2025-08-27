@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const navigation = [
-  { name: "Paths", href: "#" },
-  { name: "Courses", href: "#" },
-  { name: "Tutorials", href: "#" },
-  { name: "Projects", href: "#" },
+  { name: "Paths", href: "/paths" },
+  { name: "Topics", href: "/topics" },
+  { name: "Stack", href: "/stack" },
+  { name: "Projects", href: "/projects" },
+  { name: "Courses", href: "/courses" },
 ];
 
 export default function Header() {
@@ -18,9 +20,9 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div>
-          <a href="#">
+          <Link href="/">
             <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
-          </a>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}

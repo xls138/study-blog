@@ -9,18 +9,56 @@ const navigation = {
     { name: "Fullstack to Backend", href: "#" },
     { name: "Design to Code", href: "#" },
   ],
-  courses: [
+  projects: [{ name: "Fall Guys", href: "#" }],
+  topics: [
     { name: "JavaScript", href: "#" },
     { name: "CSS", href: "#" },
     { name: "Node.js", href: "#" },
     { name: "TypeScript", href: "#" },
+    { name: "JavaScript Performance", href: "#" },
+    { name: "Functional JavaScript", href: "#" },
     { name: "React & Next.js", href: "#" },
+    { name: "Vue.js", href: "#" },
+    { name: "Code Architecture", href: "#" },
+    { name: "Build Tools & Testing", href: "#" },
+    { name: "Enterprise & Leadership", href: "#" },
+    { name: "Backend Languages", href: "#" },
+    { name: "Browser APIs", href: "#" },
+    { name: "Python", href: "#" },
+    { name: "Data Visualization", href: "#" },
   ],
-  tutorials: [
-    { name: "FullStackOpen", href: "#" },
-    { name: "react-tutorial.app", href: "#" },
+  stack: [
+    { name: "pnpm", href: "https://pnpm.io/zh/installation" },
+    { name: "Vite", href: "https://cn.vite.dev/guide/" },
+    { name: "React 18", href: "https://zh-hans.react.dev/learn" },
+    {
+      name: "TypeScript",
+      href: "https://www.typescriptlang.org/zh/docs/handbook/typescript-in-5-minutes.html",
+    },
+    { name: "React Router", href: "https://reactrouter.com/home" },
+    {
+      name: "Tailwind CSS",
+      href: "https://tailwindcss.com/docs/installation/using-vite",
+    },
+    {
+      name: "React Aria Components",
+      href: "https://react-spectrum.adobe.com/react-aria/components.html",
+    },
+    { name: "Axios", href: "https://axios-http.com/zh/docs/intro" },
+    { name: "ESLint", href: "https://eslint.org/docs/latest/" },
+    { name: "Prettier", href: "https://prettier.io/docs/" },
+    { name: "React Hook Form", href: "https://react-hook-form.com/get-started" },
+    { name: "Zod", href: "https://zod.dev/" },
+    {
+      name: "Zustand",
+      href: "https://zustand.docs.pmnd.rs/getting-started/introduction",
+    },
+    {
+      name: "Day.js",
+      href: "https://day.js.org/docs/zh-CN/installation/installation",
+    },
+    { name: "Lucide React", href: "https://lucide.dev/icons/" },
   ],
-  projects: [{ name: "Fall Guys", href: "#" }],
   social: [
     { name: "GitHub", href: "#", icon: "/github.svg" },
     { name: "Email", href: "#", icon: "/mail.svg" },
@@ -79,41 +117,41 @@ export default function Footer() {
               </div>
 
               <div>
-                <h3 className="font-medium text-foreground mb-4">Courses</h3>
-                <ul className="space-y-2">
-                  {navigation.courses.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-foreground mb-4">Tutorials</h3>
-                <ul className="space-y-2">
-                  {navigation.tutorials.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
                 <h3 className="font-medium text-foreground mb-4">Projects</h3>
                 <ul className="space-y-2">
                   {navigation.projects.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={item.href}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-foreground mb-4">Topics</h3>
+                <ul className="space-y-2">
+                  {navigation.topics.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={item.href}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-foreground mb-4">Stack</h3>
+                <ul className="space-y-2">
+                  {navigation.stack.map((item) => (
                     <li key={item.name}>
                       <a
                         href={item.href}
