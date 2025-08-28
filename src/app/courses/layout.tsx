@@ -1,7 +1,14 @@
+import Header from "@/components/Header";
+
 export default function CoursesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div>{children}</div>;
+  return (
+    <>
+      <Header />
+      {children}
+    </>
+  );
 }

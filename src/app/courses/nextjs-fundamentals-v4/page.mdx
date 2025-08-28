@@ -1,0 +1,48 @@
+import { CourseLayout } from "@/components/CourseLayout";
+
+export const course = {
+  title: "Next.js Fundamentals, v4",
+  imageUrl: "/courses/course4.webp",
+  date: "2025-04-03",
+  author: {
+    name: "Scott Moss",
+    imageUrl: "/authors/author4.webp",
+  },
+};
+
+export const metadata = {
+  title: course.title,
+};
+
+export default (props) => <CourseLayout course={course} {...props} />;
+
+## 0-introduction
+
+### 讲师介绍 (Instructor Introduction)
+
+- **Scott Moss**: Frontend Masters 课程讲师。
+- **当前工作**: Double Zero 公司联合创始人，开发 AI 代理 (Agent)。
+- **技术栈**: 所有项目都使用 Next.js 构建并部署在 Vercel 上，因此他对这些技术有基于生产经验的深刻见解。
+- **过往经历**: 曾任职于风险投资公司 (VC) 和 Netflix 工程师。
+
+### 课程方法 (Course Approach)
+
+- **理论与实践结合**: 探讨高阶概念，并通过构建一个真实的应用来实践。
+- **“舒适区”外的学习**: 课程项目会带来适度的挑战，旨在促进成长和真正地学习。
+
+### 课程项目 (Course Project)
+
+- **项目**: Mode (一个任务跟踪应用 Linear 的克隆版)。
+- **功能涵盖**:
+  - 用户认证 (Authentication)
+  - 静态页面 (Static pages)
+  - 应用核心逻辑
+  - API 路由 (API routes)
+  - 服务器端操作 (Server Actions)
+- **目标**: 覆盖学习 Next.js 所需的 65-75% 的核心知识。
+
+### 课程资源 (Course Resources)
+
+- **GitHub 仓库**: `Hendrixer/Next.js-Fundamentals`
+- **分支管理**: 每个课程有对应的开始分支和解决方案分支，方便跟进和查看代码。
+- **课程笔记**: 笔记已从 Notion 迁移到项目仓库中的 Markdown 文件，方便查阅。
