@@ -28,21 +28,21 @@ export default function Header() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-8">
           {navigation.map((item) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
               className="hover:text-muted-foreground transition-colors"
             >
               {item.name}
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* Desktop Login */}
         <div className="hidden md:flex">
-          <a href="#" className="hover:text-muted-foreground transition-colors">
+          <Link href="#" className="hover:text-muted-foreground transition-colors">
             Log in →
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -58,22 +58,22 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-secondary px-6 py-4 space-y-4">
           {navigation.map((item) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
               className="block py-2 hover:text-muted-foreground transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               {item.name}
-            </a>
+            </Link>
           ))}
-          <a
+          <Link
             href="#"
             className="block py-2 border-t border-border pt-4 hover:text-muted-foreground transition-colors"
             onClick={() => setMobileMenuOpen(false)}
           >
             Log in
-          </a>
+          </Link>
         </div>
       )}
     </header>

@@ -3,7 +3,6 @@
 @import "../styles/prism.css" layer(components);
 
 @plugin "@tailwindcss/typography";
-@config "../../typography.ts";
 
 @custom-variant dark (&:is(.dark *));
 

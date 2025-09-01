@@ -1,6 +1,7 @@
 import { type Metadata } from "next";
 import { type CourseWithSlug, getAllCourses } from "@/lib/courses";
 import Image from "next/image";
+import Link from "next/link";
 
 function Course({ course }: { course: CourseWithSlug }) {
   return (
@@ -34,10 +35,10 @@ function Course({ course }: { course: CourseWithSlug }) {
         </div>
 
         <h3 className="mt-3 text-lg font-semibold text-white">
-          <a href={`/courses/${course.slug}`} className="hover:underline">
+          <Link href={`/courses/${course.slug}`} className="hover:underline">
             <span className="absolute inset-0" />
             {course.title}
-          </a>
+          </Link>
         </h3>
       </div>
     </article>

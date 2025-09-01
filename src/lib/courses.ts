@@ -8,6 +8,7 @@ interface Course {
     name: string;
     imageUrl: string;
   };
+  description: string;
 }
 
 export interface CourseWithSlug extends Course {

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const stack = [
   { name: "pnpm", href: "https://pnpm.io/zh/installation" },
   { name: "Vite", href: "https://cn.vite.dev/guide/" },
@@ -44,7 +46,7 @@ export default function StackSection() {
         </div>
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {stack.map((tech) => (
-            <a
+            <Link
               key={tech.name}
               href={tech.href}
               className="group p-6 bg-card border border-border rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
@@ -54,7 +56,7 @@ export default function StackSection() {
                   {tech.name}
                 </h3>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
