@@ -10,7 +10,7 @@ const cards = [
   {
     name: "AI 驱动开发",
     description:
-      "ChatGPT/Copilot 辅助编程、AI 工具集成、智能化前端开发流程优化。",
+      "Cursor/Claude Code 辅助编程、AI 工具集成、智能化前端开发流程优化。",
     icon: BotMessageSquare,
   },
   {
