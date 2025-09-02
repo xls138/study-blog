@@ -29,7 +29,7 @@ export function CourseLayout({
 }) {
   return (
     <div className="mx-auto flex max-w-2xl gap-x-10 px-4 py-10 sm:px-6 sm:py-14 lg:max-w-5xl">
-      <main className="w-full flex-1">
+      <main className="w-full flex-1 overflow-x-hidden">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
