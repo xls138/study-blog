@@ -1,0 +1,1949 @@
+import { CourseLayout } from "@/components/CourseLayout";
+
+export const course = {
+  title: "React Native, v3",
+  imageUrl: "/courses/react-native-v3.webp",
+  date: "2024-09-10",
+  author: {
+    name: "Kadi Kraman",
+    imageUrl: "/authors/KadiKraman.webp",
+  },
+  description:
+    "运用你的React技能，通过React Native和Expo为iOS和Android构建功能丰富的原生移动应用。学习创建自定义按钮、可滚动列表等UI组件，实现屏幕间导航，并使用AsyncStorage进行数据持久化。通过构建实用项目来应用所学技能，例如购物清单应用和带有推送通知的重复提醒系统！",
+};
+
+export const metadata = {
+  title: course.title,
+};
+
+export default (props) => <CourseLayout course={course} {...props} />;
+
+# 0-introduction
+
+### **课程简介**
+
+欢迎来到 React Native 入门课程。
+
+- **目标受众**: React Native 新手，或仅有少量尝试、刚刚入门的开发者。
+- **学习方式**: “边做边学” (Learn by doing)，从零开始。
+- **课程内容**:
+  - 掌握使用 React Native 构建移动应用的基础知识。
+  - 学习核心组件的使用。
+  - 强调移动端开发与 Web 开发的异同之处。
+- **先决条件**:
+  - **强烈建议**: 熟悉 JavaScript 和 TypeScript。
+  - **推荐**: 了解 React，但不是必需的。
+
+### **讲师介绍**
+
+- **Kadi Kraman**:
+  - 从早期就开始接触并使用 React Native。
+  - 曾任 PU map 应用的技术负责人。
+  - 活跃于 React 社区，做过多场技术分享。
+  - 主导构建了 React Conf 2024 的官方应用（已在 Google Play 和 App Store 上架，代码开源）。
+  - 目前在 Expo 工作。
+
+### **课程要求**
+
+- 一台电脑 (Mac, Windows, 或 Linux)。
+- 已安装 Node.js。
+- 一部手机 (iPhone 或 Android)。
+- 网络连接。
+
+### **我们将要构建的应用**
+
+我们将从零开始构建一个名为 "Taskly" 的实用工具 App。
+
+- **功能**:
+  1. 一个精美的购物清单 (Shopping list)。
+  2. 一个提醒事项 (Reminder)。
+  3. 第三个屏幕将**有意留白**，供学员自己动手实践，构建一个自己想要的功能。
+
+### **课程材料说明**
+
+- **课程网站**: 包含所有代码和资料。
+- **命令**: 所有需要在终端执行的命令，会显示在代码块中。
+- **代码**: 所有需要编写的代码，会放在可折叠的元素中（可能是完整文件，也可能是文件变更的 diff）。
+- **检查点 (Checkpoint)**: 每个小节结束后，会有一个蓝色的检查点，链接到课程解决方案仓库的对应 `commit`，方便你核对代码。
+- **提示 (Tips)**: 与当前主题相关的有用信息。
+- **警告 (Warnings)**: 提醒常见的反模式、常见错误或提供调试建议。
+
+---
+
+# 1-react-native-project-setup
+
+### **1. 环境准备 (Node.js 和包管理器)**
+
+- **Node.js**:
+  - 打开终端，运行 `node -v` 来检查版本。
+  - 建议使用 **LTS** (长期支持) 版本，即偶数版本号，如 `v18`, `v20`, `v22` 等。本课程使用 `v20`。
+- **包管理器**:
+  - 讲师使用 **Yarn Classic** (`v1.22`)。
+  - 你也可以使用 `npm` (随 Node.js 预装)、Yarn Modern、`pnpm`、`bun` 等。
+
+### **2. 关于包管理器的选择 (Yarn/pnpm 注意事项)**
+
+- **问题**: Yarn Modern 和 pnpm 默认的链接模式 (plug-n-play) 会移除 `node_modules` 文件夹。这在 React Native 项目中会产生问题，因为 iOS 和 Android 的原生目录有时需要直接链接到 `node_modules` 中的文件。
+- **解决方案**:
+  - 如果你使用 Yarn Modern 或 pnpm，需要修改配置，使其生成 `node_modules` 文件夹。
+  - 在 `.yarnrc.yml` (Yarn) 或 `.pnpmrc` (pnpm) 文件中添加 `node-linker: hoisted`。
+  - 这也是讲师在课程中选择使用 Yarn Classic 的原因。
+
+### **3. 创建新项目**
+
+- **基础命令**:
+  ```
+  npx create-expo-app
+  ```
+  - `npx` 是 Node.js 自带的包执行器，无需额外安装。
+- **查看帮助**:
+  - 使用 `h` 或 `-help` 参数可以查看命令的可用选项，这是一个好习惯。
+    ```
+    npx create-expo-app --help
+    ```
+- **选择模板**:
+  - Expo SDK 51 开始，默认模板不再是空白的，而是预装了导航、样式等内容，帮助新手快速上手。
+  - 本课程希望从零开始，所以需要选择一个空白模板。
+  - 使用 `t` 或 `-template` 标志来选择模板。
+- **使用指定的包管理器创建项目**:
+  - 如果你想使用 `yarn`，命令格式如下：
+    ```
+    yarn create expo-app <app-name>
+    ```
+- **最终使用的命令**:
+  - 我们将应用命名为 `taskly`，并使用 `t` 标志来手动选择模板。
+  ```
+  yarn create expo-app taskly -t
+  ```
+  - 在接下来的提示中，选择 **`Blank (TypeScript)`** 模板。
+
+---
+
+# 2-expo-go-on-ios-android
+
+### **1. 启动项目**
+
+1. 进入项目目录：`cd taskly`。
+2. 项目结构很精简，主要包含 `package.json`, `app.tsx` (主入口文件), `app.json` (配置文件) 等。
+3. 在 `package.json` 的 `scripts` 中可以看到 `start` 命令，它运行 `expo start`。
+4. 运行启动命令：
+
+   ```
+   yarn start
+   # 或者 npm run start
+   ```
+
+5. 该命令会启动 Metro Bundler（JavaScript 打包器）并在终端显示一个二维码。React Native 应用包含两部分：JavaScript 端和原生应用端。此命令启动的是 JS 端。
+
+### **2. 在手机上运行 (Expo Go)**
+
+我们将使用 **Expo Go** 这个应用来承载原生部分。
+
+1. **安装 Expo Go**:
+   - 在你的手机（iPhone 或 Android）上，从 App Store 或 Google Play 商店搜索并下载 **Expo Go**。
+2. **在 iOS 上运行**:
+   - 打开系统自带的 **相机** App。
+   - 扫描终端中的二维码。
+   - **首次使用**: Expo Go 会请求“查找并连接到本地网络上的设备”的权限，**必须允许**，否则无法连接到电脑上的打包器。
+   - **注意**: iOS 版 Expo Go 应用内没有扫描按钮，这是苹果的商店政策限制。
+3. **在 Android 上运行**:
+   - 打开 Expo Go 应用。
+   - 应用内有 "Scan QR code" 按钮，点击它。
+   - 允许相机权限后，扫描终端的二维码。
+
+### **3. 调试菜单 (Debug Menu)**
+
+- **打开方式**:
+  - **摇晃手机**。
+  - **iOS**: 用三根手指长按屏幕。
+- **主要功能**:
+  - **Reload**: 重新加载应用。
+  - **Show Performance Monitor**: 显示性能监控。
+  - **Open JavaScript Debugger**: 打开 JS 调试器。
+  - **Disable Fast Refresh**: 禁用快速刷新。如果你的代码修改后应用不再自动更新，检查一下是否误关了此项。
+
+### **4. 关于 TypeScript**
+
+- **强烈推荐使用 TypeScript**。
+- TS 是 JS 的超集，所有合法的 JS 代码也是合法的 TS 代码。
+- 社区和企业正在大规模转向 TS。
+- 本课程会非常轻量地介绍 TS，即使你从未用过，也推荐跟着做。
+- （虽然讲师也提供了一个纯 JS 版本的代码仓库，但与 TS 版本差异极小，建议直接使用 TS）。
+
+### **5. 连接问题排查 (`-tunnel`)**
+
+- **常见原因**: 手机和电脑没有连接到**同一个 Wi-Fi 网络**。打包器运行在电脑的 `localhost` 上，需要同一局域网才能访问。
+- **解决方案**:
+  - 如果无法连接（例如公司防火墙限制），可以使用 `-tunnel` 标志启动项目：
+    ```
+    yarn start --tunnel
+    ```
+  - 这会通过 **Ngrok** 在互联网上创建一个公共通道，将你的本地打包器暴露出去。
+  - 这样，任何设备在任何网络下都可以通过扫描新的二维码来运行你的应用。
+  - **优点**: 解决连接问题，方便与同事/朋友分享开发中的应用。
+  - **缺点**: 速度比本地网络连接稍慢。
+
+---
+
+# 3-react-native-frameworks-overview
+
+### **1. 为什么使用框架 (Expo)?**
+
+- 你可能会疑惑，一个 React Native 入门课程为什么上来就用 Expo。
+- **Expo 是一个 React Native 框架**。
+- 从 React Conf 2024 开始，**Meta (Facebook 官方) 推荐新应用使用 React Native 框架**，并特别提到了 Expo。
+
+### **2. 原生 React Native (Vanilla) 提供了什么？**
+
+- 在 iOS 和 Android 平台上运行 React 代码的能力。
+- 使用底层原生组件的能力。
+- 一些核心的构件块，如 `<View>`, `<Text>`, `<ScrollView>` 等。
+
+### **3. 原生 React Native 缺少什么？**
+
+几乎所有移动应用都需要的大量功能，在原生 React Native 中都**不内置**，例如：
+
+- 导航 (Navigation)
+- 推送通知 (Push notifications)
+- 数据持久化存储 (Data storage)
+- 使用手机摄像头 (Camera)
+- 等等...
+
+此外，一些任务虽然可以实现，但过程繁琐，例如：
+
+- 修改应用图标。
+- 添加自定义原生代码。
+- 打包用于商店发布的应用。
+
+这是**有意为之的设计**，因为将所有功能都内置会让 React Native 核心库变得极其臃肿，难以维护。因此，开发者需要依赖**社区库**来补充这些功能。
+
+### **4. 框架的角色**
+
+- 对于新手来说，选择哪些社区库、如何确保它们协同工作，是一件非常困难的事。
+- **框架 (Framework) 的作用** 就是解决这个问题。
+- 根据官方定义 (RFC)，一个 React Native 框架是：
+  - 一个**构建在 React Native 之上**的、有凝聚力的框架。
+  - 它由一套 React Native **默认未提供**的工具和库组成。
+- 框架需要满足以下要求：
+  - 开源、流行、免费。
+  - 没有供应商锁定 (No vendor lock-in)。
+
+### **5. 重要：Expo vs. Expo Go**
+
+这是一个非常重要的区别：
+
+- **Expo**: 是我们要使用的**开源 React Native 框架**的名称。
+- **Expo Go**: 是 Expo 框架的**一小部分**。它是一个**沙盒环境 (sandbox)**，主要用于：
+  - 学习和教学。
+  - 快速原型设计。
+  - 快速入门。
+- **不推荐**使用 Expo Go 来构建你的生产级应用。
+- 当你的项目需求超出了 Expo Go 的范围时（例如需要自定义原生代码），你会“毕业”到使用 **Development Builds** (开发构建)，这将在中级课程中介绍。
+
+---
+
+# 4-setup-linting-and-formatting
+
+### **1. 设置 ESLint**
+
+- Linting 对于代码质量非常重要，且设置过程很快。
+- 从 Expo SDK 51 开始，Expo 内置了一个 Lint 命令。
+- 在终端运行：
+  ```
+  npx expo lint
+  ```
+- 它会检测到你没有 ESLint 配置，并询问是否要为你配置一个。输入 `y` (yes)。
+- 这会自动安装 ESLint 相关的包，并在项目根目录创建一个 `.eslintrc.js` 配置文件。
+
+### **2. 设置 Prettier**
+
+- Prettier 是一个代码格式化工具，强烈推荐使用。它能让你专注于写代码，而不是纠结于代码格式。
+- 安装 Prettier 及其与 ESLint 集成的配置包：
+
+  ```
+  # 使用 yarn
+  yarn add -D prettier eslint-config-prettier
+
+  # 使用 npm/pnpm/bun
+  npm install -D prettier eslint-config-prettier
+  ```
+
+### **3. 整合 Prettier 与 ESLint**
+
+- 为了让 ESLint 报告 Prettier 的格式问题，需要更新 `.eslintrc.js` 文件。
+- 在 `extends` 数组中添加 `'prettier'`：
+  ```
+  // .eslintrc.js
+  module.exports = {
+    // ...
+    extends: [
+      'expo',
+      'prettier' // 添加这一行
+    ],
+    // ...
+  };
+  ```
+
+### **4. 自动修复格式问题**
+
+- 配置完成后，你可能会看到一些格式错误（例如 Prettier 默认使用双引号）。
+- 你可以创建 `.prettierrc.js` 文件来自定义 Prettier 规则，但课程中将使用默认设置。
+- **手动修复**:
+  - 运行 lint 命令并添加 `-fix` 标志，可以自动修复所有可修复的格式问题。
+    ```
+    yarn lint --fix
+    ```
+- **自动修复**:
+  - 在 VS Code 中安装 ESLint 插件，可以实现保存文件时自动格式化。
+
+---
+
+# 5-your-first-view-component-with-styles
+
+### **1. 核心组件 (`View` 和 `Text`)**
+
+- **`<View>` 组件**:
+  - 相当于 Web 开发中的 `<div>`。
+  - 是最基础的容器组件，用于布局和包裹其他组件。
+- **`<Text>` 组件**:
+  - **所有文本**都必须包裹在 `<Text>` 组件内。
+  - 与 Web 不同，你不能在 React Native 的 JSX 中直接渲染裸露的文本字符串。
+
+### **2. 条件渲染的注意事项**
+
+- 在 Web 开发中，常用 `&&` 进行条件渲染，例如 `condition && <Component />`。
+- 在 React Native 中这通常也有效，但存在一个**陷阱**：
+  - 如果 `&&` 前的表达式结果是 `0` 或 `NaN`（这些是 "falsy" 值），React Native 会尝试渲染这个数字，因为它不是 `null` 或 `false`。
+    - 由于数字 `0` 没有被包裹在 `<Text>` 组件内，应用会**报错**："Text strings must be rendered within a \<Text\> component"。
+- **更安全的方式**是使用三元运算符：
+  ```
+  {condition ? <Component /> : null}
+  ```
+
+### **3. 样式 (Styling)**
+
+- **`style` 属性**: 组件通过 `style` 属性接收样式，该属性的值是一个 JavaScript 对象。
+- **属性命名**: CSS 属性名需要转换成**驼峰式命名 (camelCase)**，例如 `background-color` 变为 `backgroundColor`。
+- **便利简写**: React Native 提供了一些方便的样式简写：
+  - `paddingHorizontal`: 同时设置 `paddingLeft` 和 `paddingRight`。
+  - `paddingVertical`: 同时设置 `paddingTop` 和 `paddingBottom`。
+
+### **4. 布局 (Flexbox)**
+
+- React Native 中的所有布局都基于 **Flexbox**。
+- **与 Web Flexbox 的主要区别**:
+  1. **`display: 'flex'` 是默认值**：所有 `<View>` 元素默认就是 Flex 容器，无需显式声明。
+  2. **`flexDirection: 'column'` 是默认值**：主轴方向默认为**纵向**（从上到下），而在 Web 中默认为 `row`（横向）。
+
+### **5. 单位 (Display Points)**
+
+- 样式中的数字（如 `padding: 16`, `borderBottomWidth: 1`）**不是像素 (pixels)**。
+- 它们是**显示点 (Display Points)**，一种与设备密度无关的单位。
+- 1 个显示点在屏幕上可能对应多个物理像素，这取决于设备的**像素密度 (pixel ratio)**。
+  - 例如，在像素密度为 `3` 的设备上，1 个显示点对应 `3x3` 的物理像素方块。
+  - 这意味着在高分辨率设备上，你需要提供更大尺寸的图片才能保证其显示清晰。
+
+### **6. 代码组织和主题 (Theming)**
+
+- **`StyleSheet.create`**:
+  - 最佳实践是将行内样式移到文件底部的 `StyleSheet.create` 对象中进行统一管理。
+  - 这是一种社区通用规范，可以提供一些样式有效性检查。
+- **创建主题文件**:
+  - React Native 没有全局 CSS 的概念。
+  - 一个常见的模式是创建一个 `theme.ts` 文件来存放共享的颜色、间距、字体大小等。
+  - 这样可以方便地在多个组件之间复用样式，保持应用风格的统一。
+  - **示例**:
+    ```tsx
+    // theme.ts
+    export const theme = {
+      colors: {
+        cerulean: "#_some_hex_code_",
+        white: "#FFFFFF",
+      },
+      spacing: {
+        small: 8,
+        medium: 16,
+      },
+    };
+    ```
+
+---
+
+# 6-create-a-button-with-pressable
+
+### **1. 创建可交互按钮**
+
+- **`<Button>` 组件**:
+  - React Native 提供了一个内置的 `<Button>` 组件。
+  - 但它在生产中**几乎从不使用**，因为它渲染的是平台原生的、**无法自定义样式**的按钮。只适合快速测试。
+- **自定义按钮的方式**:
+  - 使用可触摸组件包裹任何你想让其变得可点击的元素。
+  - **`Pressable`**: 新一代的可触摸组件，提供了更丰富的状态（如 `onHoverIn`, `onPressIn`），并可以根据是否被按下传递不同的样式。
+  - **`TouchableOpacity`**: 非常常用和流行。当被按下时，它会自动降低其子元素的不透明度，产生一个反馈效果。
+    - 可以通过 `activeOpacity` 属性来控制按下的不透明度，例如 `activeOpacity={0.8}`。
+
+### **2. 布局调整：并排与对齐**
+
+- **目标**: 将列表项文本和删除按钮放在同一行。
+- **实现**: 在它们的父容器 `<View>` 的样式中：
+  1. `flexDirection: 'row'`: 将主轴方向改为横向，使子元素并排排列。
+  2. `justifyContent: 'space-between'`: 在主轴上将子元素两端对齐，中间留出所有可用空间。
+  3. `alignItems: 'center'`: 在交叉轴上（此处是垂直方向）将子元素居中对齐。
+
+### **3. 设置按钮样式**
+
+- 我们的按钮结构是 `<TouchableOpacity>` 包裹一个 `<Text>`。
+- **`TouchableOpacity` 的样式**:
+  - `backgroundColor`
+  - `padding`
+  - `borderRadius` (圆角)
+- **`<Text>` 的样式**:
+  - `color`
+  - `fontWeight: 'bold'` (加粗)
+  - `textTransform: 'uppercase'` (文本转为大写)
+  - `letterSpacing`: 增加字母间距。
+
+### **4. 使用 `Alert` 实现确认对话框**
+
+- **`Alert`** 是 React Native 内置的一个 API，用于弹出平台原生的对话框。
+- **导入**: `import { Alert } from 'react-native';`
+- **使用**: 调用 `Alert.alert()` 方法。
+  - `Alert.alert(title, message?, buttons?)`
+- **参数**:
+  1. `title` (string): 对话框的标题。
+  2. `message` (string, 可选): 对话框的详细内容。
+  3. `buttons` (array, 可选): 一个按钮配置对象的数组。
+     - 每个按钮对象可以包含：
+       - `text` (string): 按钮上显示的文本。
+       - `onPress` (function): 点击按钮时触发的回调函数。
+       - `style` (string): 按钮的样式。可选值为：
+         - `'default'`: 默认
+         - `'cancel'`: 取消样式（在 iOS 上有特殊行为）
+         - `'destructive'`: 破坏性操作样式（在 iOS 上会显示为红色）
+- **注意**:
+  - `Alert` 的外观是**平台相关**的，在 iOS 和 Android 上看起来不一样。
+  - 如果你想完全自定义对话框的样式，你需要自己用 `Modal` 组件来构建一个。
+
+---
+
+# 7-react-components
+
+### **1. 为什么要创建组件**
+
+- 如果将所有 UI 和逻辑都写在 `App.tsx` 文件中，这个文件会变得异常庞大，难以维护和复用。
+- 通过将 UI 拆分成独立的、可复用的**组件 (Components)**，可以使代码结构更清晰、更模块化。
+
+### **2. 创建 `ShoppingListItem` 组件**
+
+- **标准实践**: 在项目根目录创建一个 `components` 文件夹来存放所有可复用组件。
+- **步骤**:
+  1. 在 `components` 文件夹下创建新文件 `ShoppingListItem.tsx`。
+  2. 在文件中，导出一个名为 `ShoppingListItem` 的函数组件。
+  3. 将之前在 `App.tsx` 中编写的列表项的 JSX、`StyleSheet` 对象以及 `handleDelete` 等相关逻辑**剪切**到 `ShoppingListItem.tsx` 文件中。
+  4. 在新文件中，补全所有缺失的导入，如 `View`, `Text`, `TouchableOpacity`, `Alert`, `theme` 等。
+  5. 在 `App.tsx` 中，导入并使用这个新的 `<ShoppingListItem />` 组件。
+
+### **3. 通过 `Props` 传递数据**
+
+- 组件需要能够接收外部数据（例如列表项的名称）才能变得动态和可复用。这通过 **`props` (properties)** 实现。
+- **传递 Props**: 在父组件 (`App.tsx`) 中，像 HTML 属性一样传递数据。
+  ```
+  <ShoppingListItem name="咖啡" />
+  <ShoppingListItem name="茶" />
+  ```
+- **接收 Props**: 在子组件 (`ShoppingListItem.tsx`) 中定义并接收这些数据。
+
+  1. **使用 TypeScript 定义 Props 类型**: 创建一个 `Props` 类型来描述组件期望接收的数据及其类型。
+
+     ```
+     type Props = {
+      name: string; // name 属性是必需的，且为字符串
+     };
+     ```
+
+     > 如果属性是可选的，可以在属性名后加 ?，如 name?: string;
+
+  2. **在函数参数中解构 Props**:
+
+     ```
+     export function ShoppingListItem({ name }: Props) {
+       // ...
+     }
+     ```
+
+  3. **在组件内部使用 Prop**:
+
+     ```
+     // 在 JSX 中渲染
+     <Text>{name}</Text>
+
+     // 在逻辑中使用
+     Alert.alert(`确定要删除 ${name} 吗?`);
+     ```
+
+### **4. Linter 插件：清理未使用的样式**
+
+- 代码重构后，`App.tsx` 和 `ShoppingListItem.tsx` 中都可能存在不再被使用的样式。
+- **`eslint-plugin-react-native`**: 这是一个非常有用的 ESLint 插件。
+- **`no-unused-styles` 规则**: 这个插件提供了一条规则，可以自动检测并高亮 `StyleSheet.create` 对象中未被使用的样式。
+- **设置步骤**:
+
+  1. 安装插件: `yarn add -D eslint-plugin-react-native`。
+  2. 在 `.eslintrc.js` 中配置：
+
+     ```
+     module.exports = {
+       // ...
+       plugins: [
+         'react-native' // 在 plugins 数组中添加
+       ],
+       rules: {
+         'react-native/no-unused-styles': 'warn' // 在 rules 中启用规则
+       }
+     };
+     ```
+
+  3. 配置完成后，编辑器就会提示你哪些样式是多余的，可以安全删除。
+
+---
+
+# 8-passing-multiple-styles-to-component
+
+### **1. 目标：实现“已完成”状态的 UI**
+
+- 为购物清单项添加一个“已完成”的状态。
+- 在“已完成”状态下，UI 会有变化：
+  - 文本颜色变灰，并添加删除线。
+  - 背景和边框颜色变浅。
+  - 删除按钮也变灰。
+
+### **2. 通过 `Prop` 传递状态**
+
+- 在 `ShoppingListItem` 组件的 `Props` 类型中添加一个新的属性 `isCompleted`。
+- 将它定义为可选的布尔值，默认为 `false`。
+  ```
+  type Props = {
+    name: string;
+    isCompleted?: boolean; // 可选的布尔值
+  };
+  ```
+
+### **3. 核心技巧：为 `style` 属性传递样式数组**
+
+- React Native 组件的 `style` 属性不仅可以接收单个样式对象，还可以接收一个**样式对象的数组**。
+- `style={[styles.base, styles.override]}`
+- **工作原理**:
+  - 数组中的样式会从左到右依次合并。
+  - 后面的样式会**覆盖**前面样式中的同名属性。
+- **条件样式的关键**:
+  - 样式数组中可以包含 `false`, `null`, 或 `undefined` 等假值 (falsy values)。
+  - React Native 会**自动忽略**这些假值。
+  - 这使得添加条件样式变得非常简单和优雅。
+
+### **4. 具体实现**
+
+- 利用样式数组和条件逻辑来应用“已完成”的样式。
+- **示例**:
+
+  ```
+  // 为容器应用条件样式
+  <View style={[
+    styles.itemContainer,
+    isCompleted && styles.completedContainer
+  ]} />
+
+  // 为文本应用条件样式
+  <Text style={[
+    styles.itemText,
+    isCompleted && styles.completedText
+  ]} />
+  ```
+
+  - `isCompleted && styles.completedContainer`：当 `isCompleted` 为 `true` 时，表达式结果为 `styles.completedContainer` 对象；当 `isCompleted` 为 `false` 时，结果为 `false`，该项被忽略。
+
+- 在 `StyleSheet` 中定义新的样式：
+  - `completedContainer`: 修改 `backgroundColor` 和 `borderBottomColor`。
+  - `completedText`:
+    - `textDecorationLine: 'line-through'` (添加删除线)
+    - `color`: 修改为灰色。
+
+### **5. JSX 中的布尔属性简写**
+
+- 当你想要给一个组件传递值为 `true` 的布尔属性时，有一种简写形式。
+- **常规写法**: `<ShoppingListItem isCompleted={true} />`
+- **简写形式**: `<ShoppingListItem isCompleted />`
+- 这种简写只适用于值为 `true` 的情况。
+
+---
+
+# 9-icon-buttons
+
+### **1. 使用图标按钮**
+
+- 在移动端 UI 中，使用图标代替文本作为按钮是一种常见做法，可以节省屏幕空间，提升美感。
+- 我们将使用 **`@expo/vector-icons`** 这个库。
+  - 它底层封装了 `react-native-vector-icons`。
+  - Expo 提供了一个[非常方便的网站](https://icons.expo.fyi/)，可以用来搜索数千个可用的图标。
+
+### **2. 安装图标库 (`@expo/vector-icons`)**
+
+- **推荐的安装方式**:
+  ```
+  npx expo install @expo/vector-icons
+  ```
+- **为什么使用 `npx expo install`?**
+  - 这个命令会确保你安装的库版本与你项目中使用的 **Expo SDK 版本兼容**。
+  - React Native 库（尤其是包含原生代码的库）通常与特定的 React Native 版本绑定。`expo install` 解决了版本兼容性问题，避免了许多潜在的错误。
+  - 它还会自动检测你项目中的包管理器（yarn, npm, pnpm）并使用它来安装。
+- **Expo Go 与原生库**:
+  - 通常，添加一个包含原生代码的库需要重新编译你的原生应用。
+  - 但 **Expo Go** 是一个沙盒环境，它**预装了许多常用的原生库**，包括 `@expo/vector-icons`。
+  - 这就是为什么我们可以直接安装 JS 包并立即使用的原因，无需重新构建。
+
+### **3. 实现图标按钮**
+
+- **步骤**:
+
+  1. 从图标网站 (https://icons.expo.fyi/) 找到你想要的图标，例如 `AntDesign` 中的 `closecircleo`。网站会提供给你需要复制的 `import` 语句和组件用法。
+  2. 在 `ShoppingListItem.tsx` 文件中导入该图标：
+
+     ```
+     import { AntDesign } from '@expo/vector-icons';
+     ```
+
+  3. 在 `<TouchableOpacity>` 组件内部，用**图标组件替换**原来的 `<Text>` 组件。
+
+     ```
+     <TouchableOpacity onPress={handleDelete}>
+       {/* <Text>DELETE</Text> 被替换为下面的图标 */}
+       <AntDesign name="closecircleo" size={24} color="red" />
+     </TouchableOpacity>
+     ```
+
+  4. 通过 `props` (如 `name`, `size`, `color`) 来定制图标的样式。
+  5. 可以根据 `isCompleted` 属性来动态改变图标的颜色，实现完成状态下的灰色效果。
+
+### **4. 关于 SVG 性能和替代方案**
+
+- **性能提示**:
+  - 在 React Native 中，特别是在 Android 上，**SVG 的性能并不总是最优的**。
+  - 如果一个屏幕上有大量的 SVG，可能会导致应用变慢。
+  - 在 React Native 中应谨慎使用 SVG，小型的 PNG 图片有时是性能更好的选择。
+- **替代方案**:
+  - 对于图标按钮这样少量使用 SVG 的场景，性能完全没问题。
+  - 如果你想使用自定义的 SVG 图标，可以使用 `react-native-svg` 库。
+  - `expo-image` 组件现在也支持渲染 SVG。
+
+---
+
+# 10-expo-router
+
+### 1. 移动端导航简介
+
+- 移动端导航与 Web 不同，包含 Tabs（标签页）、Modals（模态框）、Stack（堆栈）等概念。
+- React Native 本身不内置导航库，需要额外安装。
+- 本课程使用 **Expo Router**。
+
+### 2. Expo Router 介绍
+
+- **Expo Router**：一个基于**文件系统**的 React Native 导航库。
+- 它构建于 **React Navigation** 之上，因此 React Navigation 的屏幕配置选项 (screen options) 同样适用于 Expo Router，可以查阅其文档获取更多细节。
+- **工作原理**：
+  - `app` 文件夹是所有路由的根目录。
+  - 文件和文件夹的名称决定了屏幕的路径 (URL)。
+    - `app/index.tsx` -> 根路径 `/`
+    - `app/home.tsx` -> `/home`
+    - `app/products/index.tsx` -> `/products`
+    - `app/products/[id].tsx` -> 动态路由，如 `/products/123`
+- **布局文件 (`_layout.tsx`)**:
+  - 这是 Expo Router 的核心，用于定义文件夹内屏幕的布局方式。
+  - 每个文件夹最多只能有一个 `_layout.tsx` 文件。
+  - 你可以在其中指定该层级的导航是 Stack, Tabs, 还是 Modal，并配置 Header 等。
+
+### 3. 安装和配置 Expo Router
+
+1. **安装依赖**:
+
+   ```bash
+   npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants expo-status-bar
+
+   ```
+
+   - `react-native-safe-area-context`: 用于处理刘海屏等异形屏的安全区域，Expo Router 会自动包裹屏幕。
+   - `expo-linking`: 用于实现深层链接 (Deep Linking)。
+
+2. **修改 `package.json`**:
+
+   - 找到 `main` 字段，将其值从 `"expo/AppEntry.js"` 修改为：
+
+   ```json
+   "main": "expo-router/entry"
+
+   ```
+
+   - 这将应用的入口点切换到 Expo Router。
+
+3. **调整文件结构**:
+   - 在项目根目录创建一个新的文件夹 `app`。
+   - 将 `App.tsx` 文件**移动**到 `app` 文件夹内。
+   - 将 `app/App.tsx` **重命名**为 `index.tsx`。应用的入口路由必须是 `index` 文件。
+4. **修改 `app.json`**:
+
+   - 添加 `scheme` 字段，用于深层链接。你的应用会注册监听这个 scheme。
+
+   ```json
+   {
+     "expo": {
+       "scheme": "taskly"
+     }
+   }
+   ```
+
+5. **重启服务**:
+
+   - 每次修改完原生或核心配置后，需要**重启 Metro Bundler**。
+
+   ```bash
+   yarn start
+   # 如果遇到问题，可以尝试清除缓存
+   # yarn start --reset-cache
+
+   ```
+
+### 4. 创建根布局 (`app/_layout.tsx`)
+
+1. 在 `app` 文件夹下创建 `_layout.tsx`。
+2. 默认情况下，即使没有布局文件，所有屏幕也会被渲染在一个 Stack 导航器中。创建布局文件是为了进行自定义配置。
+3. 布局文件必须**默认导出**一个组件 (`export default`)。
+
+   ```jsx
+   import { Stack } from "expo-router";
+
+   export default function Layout() {
+     return (
+       <Stack>
+         <Stack.Screen
+           name="index" // 对应文件名 index.tsx
+           options={{
+             title: "Shopping List", // 设置导航栏标题
+           }}
+         />
+       </Stack>
+     );
+   }
+   ```
+
+   - `<Stack>` 组件将所有子屏幕渲染为堆栈导航。
+   - `<Stack.Screen>` 用于配置单个屏幕，`name` 属性对应其文件名（不含扩展名），`options` 用于自定义外观和行为。
+
+### 5. 关于 Scheme 和链接
+
+- `scheme` 意味着你可以使用 `taskly://` 这样的 URI 来打开你的应用。
+- 这是一种基础的 Deep Linking。更高级的方式是 Universal Links (iOS) 和 App Links (Android)，它们使用标准的 `https://` 链接并需要网站验证，配置更复杂。
+
+---
+
+# 11-stack-navigation
+
+### 1. Stack (堆栈) 导航
+
+- **概念**：当你导航到一个新屏幕时，它会像卡片一样被“推入”并叠加在旧屏幕之上，形成一个堆栈。返回时，则会“弹出”最上层的屏幕。
+- Expo Router 中，默认的导航方式就是 Stack。
+
+### 2. 创建新屏幕
+
+- 在 `app` 目录下创建新文件即可创建新屏幕。
+- 例如，创建 `app/counter.tsx` 和 `app/idea.tsx`。
+
+### 3. 三种主要的导航方式
+
+1. **使用 `<Link>` 组件 (声明式)**
+
+   - 从 `expo-router` 导入 `Link` 组件。
+   - 使用 `href` 属性指定目标路径。
+   - `<Link>` 组件内部可以直接写文本，它会被渲染成可点击的文本。
+
+   ```jsx
+   import { Link } from "expo-router";
+
+   <Link href="/counter">
+     <Text>Go to Counter</Text>
+   </Link>;
+   ```
+
+2. **使用 `useRouter` Hook (编程式)**
+
+   - 当你需要在某个事件（如按钮点击）后执行导航时，使用此方式。
+   - 从 `expo-router` 导入 `useRouter` hook。
+   - `router` 对象提供了 `push`, `navigate`, `replace` 等方法。
+     - `push()`: 总是将一个新屏幕推入堆栈顶层。
+     - `navigate()`: 如果目标屏幕已在堆栈中，会返回到该屏幕，而不是添加新的。
+     - `replace()`: 用新屏幕替换当前屏幕。
+
+   ```jsx
+   import { useRouter } from "expo-router";
+   import { TouchableOpacity, Text } from "react-native";
+
+   const router = useRouter();
+
+   <TouchableOpacity onPress={() => router.navigate("/idea")}>
+     <Text>Go to Idea</Text>
+   </TouchableOpacity>;
+   ```
+
+3. **使用导航器自带的返回按钮**
+   - Stack 导航器会自动在非根屏幕的左上角添加一个返回按钮，点击即可返回上一级。
+
+### 4. 平台差异
+
+- Stack 导航的**头部 (Header) 样式和切换动画在 iOS 和 Android 上是不同的**。
+- 这是有意为之的，为了让应用在各自的平台上看起来更“原生”。
+- 例如，iOS 的标题默认居中，而 Android 默认居左。
+- 你可以自定义这些样式，让它们在两个平台上保持一致。
+
+---
+
+# 12-modal-bottom-tab-navigation
+
+### 1. Modal (模态) 导航
+
+- **概念**: 将一个屏幕以模态形式呈现在当前内容之上，通常用于执行独立任务或显示重要信息。
+- **实现方式**:
+  - 在 `_layout.tsx` 文件中，为 `Stack.Screen` 添加 `options`。
+  - 设置 `presentation: 'modal'`。
+  ```jsx
+  <Stack.Screen
+    name="counter"
+    options={{
+      presentation: "modal",
+      title: "Counter",
+    }}
+  />
+  ```
+- **注意事项**:
+  - 模态屏幕的定义层级需要在它要覆盖的屏幕之上或与之相邻。
+  - 在 Android 上，默认的模态动画和普通屏幕切换类似。可以通过 `animation` 选项来统一，例如 `animation: 'slide_from_bottom'` 可以让 iOS 和 Android 都实现从底部滑入的效果。
+
+### 2. Bottom Tab (底部标签页) 导航
+
+- 这是移动应用中最常见的导航模式之一。
+- **Expo Router 使其实现变得极其简单**:
+
+  1. 打开根布局文件 `app/_layout.tsx`。
+  2. 将所有的 `<Stack>` 组件**重命名**为 `<Tabs>`。
+  3. 将所有的 `<Stack.Screen>` 组件**重命名**为 `<Tabs.Screen>`。
+
+  ```jsx
+  import { Tabs } from 'expo-router';
+
+  export default function Layout() {
+    // 之前是 <Stack>
+    return (
+      <Tabs>
+        {/* 之前是 <Stack.Screen> */}
+        <Tabs.Screen name="index" ... />
+        <Tabs.Screen name="counter" ... />
+        <Tabs.Screen name="idea" ... />
+      </Tabs>
+    );
+  }
+
+  ```
+
+- 切换到 Tabs 导航后，页面底部就会出现标签栏，用于在不同屏幕间切换。
+- 之前使用的 `<Link>` 和 `useRouter` 导航方式依然有效。
+
+### 3. 自定义底部标签页图标
+
+- 默认情况下，标签页会显示一个占位符图标。
+- **实现方式**:
+
+  - 在 `Tabs.Screen` 的 `options` 中，使用 `tabBarIcon` 属性。
+  - `tabBarIcon` 是一个函数，它返回一个 React 组件作为图标。
+  - 该函数会接收 `{ color, size, focused }` 作为参数，可以利用这些参数来动态调整图标样式。
+
+  ```jsx
+  import { AntDesign } from "@expo/vector-icons";
+
+  <Tabs.Screen
+    name="index"
+    options={{
+      title: "Shopping List",
+      tabBarIcon: ({ color, size }) => (
+        <AntDesign name="shoppingcart" size={size} color={color} />
+      ),
+    }}
+  />;
+  ```
+
+### 4. 全局配置 Tab 样式
+
+- 可以在顶层的 `<Tabs>` 组件上使用 `screenOptions` 来为所有标签页设置通用样式。
+- 例如，设置激活状态下的颜色：
+  ```jsx
+  <Tabs
+    screenOptions={{
+      tabBarActiveTintColor: theme.colors.cerulean,
+    }}
+  >
+    {/* ...screens */}
+  </Tabs>
+  ```
+
+---
+
+# 13-nested-navigators
+
+### 1. 嵌套导航 (Nesting Navigators)
+
+- 在原生应用开发中，导航器可以无限层级地嵌套，例如在一个 Tab 内部嵌套一个 Stack，或者 Stack 内部再嵌套一个 Stack。
+- 我们可以利用这个特性在一个标签页内实现独立的导航流程。
+
+### 2. 将屏幕转换为文件夹 (实现嵌套)
+
+- **目标**: 将 "Counter" 标签页从一个单独的屏幕变成一个拥有自己导航堆栈的区域。
+- **步骤**:
+
+  1. **创建文件夹**: 在 `app` 目录下，创建一个与原屏幕同名的新文件夹，例如 `counter`。
+  2. **移动和重命名**: 将原来的 `app/counter.tsx` 文件移动到 `app/counter/` 文件夹内，并将其重命名为 `index.tsx`。
+     - 这样做可以保持路由路径不变 (`/counter` 仍然指向这个屏幕)。
+  3. **创建内部布局**: 在 `app/counter/` 文件夹内，创建一个新的 `_layout.tsx` 文件。这个文件将定义 `counter` 文件夹内部的导航行为（例如，一个 Stack 导航）。
+
+     ```jsx
+     // app/counter/_layout.tsx
+     import { Stack } from "expo-router";
+
+     export default function CounterLayout() {
+       return <Stack />;
+     }
+     ```
+
+  4. **创建新屏幕**: 在 `app/counter/` 文件夹内创建其他屏幕，例如 `history.tsx`。这个屏幕的路径将是 `/counter/history`。
+
+### 3. 处理双重导航头 (Double Header)
+
+- 嵌套导航后，你可能会看到两个导航头（外部 Tab 导航的头和内部 Stack 导航的头）。
+- **解决方法**: 隐藏其中一个。
+- **判断隐藏哪个**: 在本例中，因为内部 Stack 会有多个屏幕（Counter 和 History），我们需要保留内部 Stack 的导航头来显示标题和返回按钮。因此，我们应该隐藏外部 Tab 导航在 "Counter" 标签页上显示的那个头。
+- **实现**: 在**根布局** (`app/_layout.tsx`) 中，找到对应的 `Tabs.Screen`，并设置 `headerShown: false`。
+
+  ```jsx
+  // app/_layout.tsx
+  <Tabs.Screen
+    name="counter" // 对应的文件夹名
+    options={{
+      headerShown: false, // 隐藏外部导航头
+      ...
+    }}
+  />
+
+  ```
+
+### 4. 在导航头中添加按钮 (`headerRight`)
+
+- 我们可以在内部布局 (`app/counter/_layout.tsx`) 中为屏幕配置 `headerRight` 选项，在导航头右侧添加一个自定义按钮。
+- `headerRight` 是一个返回 React 组件的函数。
+- **示例**: 添加一个可点击的历史图标，用于导航到 `history` 屏幕。
+  ```jsx
+  // app/counter/_layout.tsx
+  <Stack>
+    <Stack.Screen
+      name="index"
+      options={{
+        title: "Counter",
+        headerRight: () => (
+          <Link href="/counter/history" asChild>
+            <Pressable>
+              <MaterialIcons name="history" size={32} color="gray" />
+            </Pressable>
+          </Link>
+        ),
+      }}
+    />
+    <Stack.Screen name="history" options={{ title: "History" }} />
+  </Stack>
+  ```
+
+### 5. 提升用户体验 (`hitSlop` 和 `asChild`)
+
+- 对于没有背景边框的图标按钮，用户的点击区域可能很小。
+- **`hitSlop`**: `Pressable` 组件的一个属性，可以扩大组件的可点击热区，而不需要改变其视觉大小。
+  - `hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}`
+- **`asChild`**: 当 `Link` 组件的直接子元素是另一个可以处理按压事件的组件（如 `Pressable` 或 `TouchableOpacity`）时，需要给 `Link` 添加 `asChild` 属性。这会将导航功能“转移”给子组件，而不是渲染一个额外的 `<a>` 标签包裹层。
+
+---
+
+# 14-text-input
+
+### 1. 文本输入 (`TextInput`)
+
+- React Native 中用于接收用户键盘输入的组件是 `<TextInput>`。
+- 与 Web 不同，React Native 没有统一的 `<form>` 组件，需要单独处理每个输入。
+- **基础用法**:
+  - `<TextInput>` 默认没有任何样式，你需要手动添加 `borderColor`, `borderWidth`, `padding` 等样式才能让它可见。
+  - `placeholder`: 设置占位文本。
+  - `value`: 输入框的当前值。
+  - `onChangeText`: 文本变化时的回调函数，直接返回文本字符串，比 Web 的 `onChange` 事件更方便。
+
+### 2. 受控组件 (Controlled Input)
+
+- 使用 **`useState` Hook** 来管理输入框的状态是一种标准实践。
+- `useState` 返回一个包含两个元素的数组：当前状态值和更新该状态的函数。
+
+```jsx
+// 1. 引入 useState
+import React, { useState } from "react";
+
+// 2. 在组件中初始化状态
+const [value, setValue] = useState("");
+
+// 3. 将状态和更新函数绑定到 TextInput
+<TextInput
+  placeholder="例如：咖啡"
+  value={value}
+  onChangeText={setValue} // 简写形式
+/>;
+```
+
+### 3. 配置键盘行为
+
+- `<TextInput>` 提供了多个 props 来优化键盘体验：
+  - `keyboardType`: 设置键盘类型，如 `'numeric'`, `'email-address'` 等。
+  - `autoCapitalize`, `autoComplete`, `autoCorrect`: 控制自动大写、自动完成和自动纠错。
+  - `returnKeyType`: 定义键盘右下角“返回键”的样式和功能，如 `'done'`, `'next'`, `'search'`。
+- **提交输入**:
+  - `onSubmitEditing`: 当用户点击键盘的“返回键”（如 "Done" 按钮）时触发的回调函数。
+  - 这允许我们在不创建额外提交按钮的情况下处理表单提交。
+
+### 4. 状态管理与列表渲染
+
+- **管理列表数据**: 使用另一个 `useState` 来存储购物清单的数组。
+  ```jsx
+  const [shoppingList, setShoppingList] = useState([]);
+  ```
+- **动态渲染列表**: 使用数组的 `.map()` 方法来遍历 `shoppingList` 状态，并为每个项渲染一个 `<ShoppingListItem>` 组件。
+  ```jsx
+  {
+    shoppingList.map((item) => (
+      <ShoppingListItem key={item.id} name={item.name} />
+    ));
+  }
+  ```
+- **添加新项目**:
+
+  1. 在 `handleSubmit` 函数中，检查输入值是否为空。
+  2. 创建一个包含新项目和所有旧项目的新数组。使用展开语法 (`...`) 是一个好方法。
+
+  ````
+   ```javascript
+   const newItem = { id: new Date().toISOString(), name: value };
+   const newShoppingList = [newItem, ...shoppingList];
+  ````
+
+  ```
+
+  1. 使用 `setShoppingList(newShoppingList)` 更新状态。
+  2. 使用 `setValue('')` 清空输入框。
+  ```
+
+---
+
+# 15-scrollview
+
+### 1. 处理溢出内容
+
+- 在 Web 上，当内容超出屏幕高度时，页面会自动出现滚动条。
+- 在 React Native 中，默认情况是**不会自动滚动的**。超出的内容会被直接截断，无法查看。
+
+### 2. `ScrollView` 组件
+
+- 如果你需要一个区域可以滚动，必须明确地使用可滚动组件。
+- **`<ScrollView>`** 是最基础的可滚动容器。
+- **用法**: 只需将原来不可滚动的 `<View>` 替换为 `<ScrollView>` 即可。
+
+### 3. `contentContainerStyle` vs `style`
+
+- **`style`**: 应用于 `ScrollView` 组件**本身**的样式（外部容器）。
+- **`contentContainerStyle`**: 应用于 `ScrollView` **内部内容**的样式。
+- **关键区别**: 如果你想给滚动内容添加 `padding` 或 `margin`，应该使用 `contentContainerStyle`。如果直接在 `style` 中添加 `paddingTop`，可能会导致最后一个元素被截断，因为内边距是加在外部容器上的。
+
+### 4. `stickyHeaderIndices` (粘性头部)
+
+- `ScrollView` 提供了一个非常有用的属性 `stickyHeaderIndices`。
+- 它接收一个数字数组，数组中的数字代表 `ScrollView` 直接子元素的索引。
+- 被指定的子元素在向上滚动时会“粘”在屏幕顶部，直到被下一个粘性头部推出。
+- **示例**:
+
+  ```jsx
+  <ScrollView stickyHeaderIndices={[0]}>
+    {/* 索引为 0 的子元素，会变成粘性头部 */}
+    <TextInput ... />
+
+    {/* 其他内容 */}
+    {shoppingList.map(...)}
+  </ScrollView>
+
+  ```
+
+- **注意**: 为了让粘性头部在滚动时覆盖下方内容，需要给它设置一个不透明的 `backgroundColor`。
+
+---
+
+# 16-flatlist
+
+### 1. `ScrollView` 的问题
+
+- 虽然 `ScrollView` 可以实现滚动，但它会一次性渲染所有的子元素。
+- 如果你有一个非常长的列表（成百上千项），一次性渲染所有项会消耗大量内存，导致性能问题甚至应用崩溃。
+- **规则**: 如果你是通过 `.map()` 遍历一个数组来渲染列表，**不应该**使用 `ScrollView`。
+
+### 2. `FlatList` 组件
+
+- **`<FlatList>`** 是 React Native 中用于渲染长列表的**高性能**组件。
+- 它在 Web 中没有直接的对应物。
+- **核心优势 (虚拟化)**:
+  - 只会渲染当前屏幕可见区域内的列表项。
+  - 当你滚动时，它会自动卸载滚出屏幕的项，并渲染即将进入屏幕的项。
+  - 这大大降低了内存占用，保证了列表滚动的流畅性。
+
+### 3. `FlatList` 的核心 Props
+
+- **`data`**: 接收要渲染的列表数据数组。
+- **`renderItem`**: 一个函数，告诉 `FlatList` 如何渲染**每一项**。它会接收一个包含 `item` 的对象，你需要从 `{ item }` 中解构出列表项数据。
+- **`keyExtractor`**: 一个函数，用于为列表中的每一项生成一个唯一的 `key`。如果你的数据项中已经有了名为 `id` 或 `key` 的属性，`FlatList` 会自动使用它们，这种情况下可以省略 `keyExtractor`。
+
+### 4. `FlatList`的其他有用 Props
+
+- **`ListHeaderComponent`**: 在列表顶部渲染一个组件。常用于放置搜索框或标题。
+- **`ListEmptyComponent`**: 当 `data` 数组为空时，渲染这个组件。常用于显示“列表为空”的提示。
+- **`stickyHeaderIndices`**: 与 `ScrollView` 一样，可以设置粘性头部。注意，`ListHeaderComponent` 也算一个子元素，索引为 `0`。
+
+### 5. 从 `ScrollView` + `.map()` 迁移到 `FlatList`
+
+1. 用 `<FlatList>` 替换 `<ScrollView>` 和 `.map()` 循环。
+2. 将数据数组传递给 `data` prop。
+3. 将原来 `.map()` 中的渲染逻辑移入 `renderItem` 函数。
+4. 如果列表顶部有其他元素（如 `TextInput`），将其移入 `ListHeaderComponent`。
+5. `style`, `contentContainerStyle`, `stickyHeaderIndices` 等属性可以从 `ScrollView` 直接迁移过来。
+
+```jsx
+<FlatList
+  data={shoppingList}
+  renderItem={({ item }) => (
+    <ShoppingListItem name={item.name} /* key 不再需要在这里传递 */ />
+  )}
+  keyExtractor={item => item.id} // 如果数据项中没有 id 或 key，则需要这个
+  ListHeaderComponent={<TextInput ... />}
+  ListEmptyComponent={<Text>你的购物清单是空的。</Text>}
+/>
+
+```
+
+---
+
+# 17-deleting-items
+
+- **目标**：实现购物清单项目的删除和标记完成/未完成功能。
+- **实现删除功能**
+  - **第一步：为 `ShoppingListItem` 组件添加 `onDelete` 属性**
+    - 在 `ShoppingListItem` 组件中，定义一个新的 props：`onDelete`。
+    - 该 `prop` 是一个必需的函数类型 (`() => any`)。
+    - 当删除按钮被按下时，调用这个从父组件传入的 `onDelete` 函数。
+    ```jsx
+    // ShoppingListItem.tsx
+    const { onDelete } = props;
+    // ... in the delete button's onPress
+    onPress = { onDelete };
+    ```
+  - **第二步：在主屏幕 (`index.tsx`) 中实现删除逻辑**
+    - 创建一个名为 `handleDelete` 的函数，它接收一个 `id` (字符串)作为参数。
+    ```jsx
+    const handleDelete = (id: string) => {
+      // ... logic
+    };
+    ```
+    - 在渲染 `ShoppingListItem` 组件时，传入 `onDelete` 属性。
+    - 使用箭头函数将 `item.id` 预先绑定到 `handleDelete` 函数中。
+    ```jsx
+    <ShoppingListItem
+      // ... other props
+      onDelete={() => handleDelete(item.id)}
+    />
+    ```
+  - **第三步：更新状态**
+    - 在 `handleDelete` 函数中，使用 `.filter()` 方法创建一个不包含要删除项目的新数组。
+    - `filter` 的逻辑是保留所有 `item.id` 不等于传入的 `id` 的项目。
+    ```jsx
+    const newShoppingList = shoppingList.filter((item) => item.id !== id);
+    ```
+    - 使用 `setShoppingList` 将状态更新为这个新数组。
+    ```jsx
+    setShoppingList(newShoppingList);
+    ```
+- **实现切换完成状态功能**
+  - **第一步：让整个列表项可点击**
+    - 在 `ShoppingListItem` 组件中，将外部的 `<View>` 容器替换为 `<Pressable>` 组件，使其可以响应点击事件。
+  - **第二步：添加 `onToggleComplete` 属性**
+    - 类似于 `onDelete`，为 `ShoppingListItem` 添加一个新的函数 `prop`：`onToggleComplete`。
+    - 在 `<Pressable>` 的 `onPress` 事件中调用 `onToggleComplete`。
+  - **第三步：在主屏幕中实现切换逻辑**
+    - 创建 `handleToggleComplete` 函数，该函数同样接收 `item.id`。
+    - 更新 `ShoppingListItem` 类型定义，添加一个可选的 `completedAtTimestamp` 属性，类型为 `number`。
+    ```tsx
+    type ShoppingListItem = {
+      // ... other properties
+      completedAtTimestamp?: number;
+    };
+    ```
+    - 在 `handleToggleComplete` 函数中，使用 `.map()` 方法遍历现有列表。
+    - 如果当前遍历项的 `id` 与要切换的 `id` 匹配：
+      - 返回一个包含该项目所有旧属性的新对象。
+      - 修改 `completedAtTimestamp` 的值：
+        - 如果它已存在（项目已完成），则将其设置为 `undefined`（标记为未完成）。
+        - 如果它不存在（项目未完成），则将其设置为当前时间戳 `Date.now()`（标记为完成）。
+    - 如果 `id` 不匹配，直接返回原项目。
+    ```jsx
+    const newShoppingList = shoppingList.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          completedAtTimestamp: item.completedAtTimestamp
+            ? undefined
+            : Date.now(),
+        };
+      }
+      return item;
+    });
+    ```
+    - 使用 `setShoppingList` 更新状态。
+  - **第四步：动态更新 UI**
+    - 在主屏幕渲染 `ShoppingListItem` 时，根据 `completedAtTimestamp` 是否存在来动态设置 `isCompleted` 属性。
+    ```jsx
+    <ShoppingListItem
+      // ... other props
+      isCompleted={Boolean(item.completedAtTimestamp)}
+      onToggleComplete={() => handleToggleComplete(item.id)}
+    />
+    ```
+
+---
+
+# 18-ordering-sorting
+
+- **目标**：优化 UI，添加完成状态图标，并根据更新时间和完成状态对列表进行排序。
+- **UI 优化：添加状态图标**
+  - **第一步：添加图标**
+    - 在 `ShoppingListItem` 组件中，导入 `Entypo` 图标库。
+    - 在项目名称旁边渲染一个图标。
+  - **第二步：调整布局**
+    - 默认情况下，图标和文本会因为父容器的 `justifyContent: 'space-between'` 而分开。
+    - 将文本和图标包裹在一个新的 `<View>` 中，并为这个新的 `<View>` 设置 `flexDirection: 'row'` 和 `gap`，使它们并排显示。
+  - **第三步：处理长文本溢出**
+    - 为防止长文本破坏布局，给包含文本和图标的 `<View>` 设置 `flex: 1`。
+    - 给文本组件 `<Text>` 本身也设置 `flex: 1`，使其填充可用空间。
+    - 在 `<Text>` 组件上使用 `numberOfLines={1}` 属性，可以使超出单行的文本被截断并显示省略号。
+  - **第四步：根据状态切换图标和颜色**
+    - 使用三元运算符根据 `isCompleted` 属性来决定显示哪个图标。
+    - 已完成：显示 `check` 图标，颜色为灰色。
+    - 未完成：显示 `circle` 图标，颜色为主色调 (cerulean)。
+- **实现列表排序**
+  - **目标排序逻辑**：
+    1. 未完成的项目始终排在已完成的项目之前。
+    2. 在各自的分组（未完成/已完成）内，最近更新（添加或切换状态）的项目排在最前面。
+  - **第一步：添加 `lastUpdatedTimestamp`**
+    - 在 `ShoppingListItem` 的类型定义中，添加一个必需的 `lastUpdatedTimestamp` 属性，类型为 `number`。
+    - 在 `handleSubmit` (添加新项目) 和 `handleToggleComplete` (切换状态) 函数中，每次更新或创建项目时，都将 `lastUpdatedTimestamp` 设置为 `Date.now()`。
+  - **第二步：创建排序函数 `orderShoppingList`**
+    - 该函数使用 JavaScript 的 `Array.prototype.sort()` 方法。
+    - `sort()` 方法接收一个比较函数 `(a, b)`，并根据返回值决定排序：
+      - `> 0`：`b` 排在 `a` 前面。
+      - `< 0`：`a` 排在 `b` 前面。
+      - `0`：保持原始顺序。
+    - **排序逻辑实现**：
+      1. **比较完成状态**：
+         - 如果 `a` 未完成，`b` 已完成，则 `a` 应该在前（返回负数）。
+         - 如果 `a` 已完成，`b` 未完成，则 `b` 应该在前（返回正数）。
+      2. **比较时间戳（如果完成状态相同）**：
+         - 无论两者是都完成还是都未完成，都用 `b` 的 `lastUpdatedTimestamp` 减去 `a` 的 `lastUpdatedTimestamp`。
+         - 这样时间戳较大的（即最新的）项目会得到一个正数结果，从而排在前面。
+  - **第三步：应用排序**
+    - 在 `FlatList` 的 `data` 属性中，将 `shoppingList` 数组用 `orderShoppingList` 函数包裹起来，确保每次渲染前都进行排序。
+    ```jsx
+    <FlatList
+      data={orderShoppingList(shoppingList)}
+      // ... other props
+    />
+    ```
+  - **效果**：
+    - 标记一个项目为完成，它会动画移动到列表底部。
+    - 取消标记，它会动画移动到列表顶部。
+    - 新添加的项目也会出现在列表顶部。
+
+---
+
+# 19-data-persistence
+
+- **目标**：使用 `AsyncStorage` 实现数据的本地持久化，使得应用关闭或刷新后购物清单数据不会丢失。
+- **问题**：当前购物清单数据存储在组件的 `state` 中，属于内存存储，应用重启后会重置。
+- **解决方案**：使用 `AsyncStorage`，它是 React Native 的本地键值存储系统，类似于 Web 的 `localStorage`，但是它是异步的。
+- **实施步骤**
+
+  - **第一步：安装 `AsyncStorage`**
+
+    ```bash
+    npx expo install @react-native-async-storage/async-storage
+
+    ```
+
+  - **第二步：创建存储工具函数 (`utils/storage.ts`)**
+    - 创建两个核心的异步函数：`saveToStorage` 和 `getFromStorage`。
+    - **`saveToStorage(key, data)`**:
+      - 接收一个 `key` (字符串) 和要存储的 `data` (任意可序列化对象)。
+      - 使用 `JSON.stringify(data)` 将数据转换为字符串，因为 `AsyncStorage` 只能存储字符串。
+      - 调用 `await AsyncStorage.setItem(key, stringifiedData)` 来保存数据。
+    - **`getFromStorage(key)`**:
+      - 接收一个 `key` (字符串)。
+      - 调用 `await AsyncStorage.getItem(key)` 获取存储的字符串数据。
+      - 如果获取到数据，使用 `JSON.parse(data)` 将其解析回 JavaScript 对象。
+      - **重要**：将 `JSON.parse` 包裹在 `try...catch` 块中，以防止因数据格式错误导致应用崩溃。如果解析失败，返回 `null`。
+      - 如果没有获取到数据，也返回 `null`。
+  - **第三步：在主屏幕 (`index.tsx`) 中集成存储功能**
+
+    - **加载初始数据**：
+      - 使用 `useEffect` Hook，并传入一个空依赖数组 `[]`，使其仅在组件首次加载时运行一次。
+      - 由于 `useEffect` 的回调函数本身不能是 `async` 的，所以在其内部定义一个 `async` 函数（如 `fetchInitialData`）并立即调用它。
+      ```jsx
+      useEffect(() => {
+        const fetchInitialData = async () => {
+          const data = await getFromStorage(storageKey);
+          if (data) {
+            setShoppingList(data);
+          }
+        };
+        fetchInitialData();
+      }, []);
+      ```
+      - 在这个函数中，调用 `getFromStorage`。如果成功获取到数据，就用 `setShoppingList` 来更新组件状态。
+    - **保存更新后的数据**：
+
+      - 在所有会修改 `shoppingList` 状态的地方（`handleSubmit`, `handleDelete`, `handleToggleComplete`），在调用 `setShoppingList` 之后，紧接着调用 `saveToStorage`，将最新的列表数据保存起来。
+      - **注意**：传递给 `saveToStorage` 的应该是更新后的列表，而不是更新前的状态。
+
+      ```jsx
+      // 例如，在 handleDelete 中：
+      const newShoppingList = shoppingList.filter(...);
+      setShoppingList(newShoppingList);
+      saveToStorage(storageKey, newShoppingList);
+
+      ```
+
+- **最终效果**：现在添加、删除或修改购物清单项目后，即使重新加载应用，数据也会被恢复。
+
+---
+
+# 20-layout-animation
+
+- **目标**：为列表项的添加、删除和排序添加平滑的动画效果。
+- **动画简介**
+  - React Native 中有多种动画实现方式。
+  - 高级动画通常使用 `Reanimated` 和 `Gesture Handler` 库，代码较复杂。
+  - 对于简单的、应用到整个布局变化的动画，可以使用 React Native 内置的 `LayoutAnimation` API。
+- **`LayoutAnimation` 工作原理**
+  - 它能自动地将 UI 从上一个状态平滑地过渡到下一个状态。
+  - 你不需要手动定义动画的起始值和结束值，系统会自动处理。
+  - 使用非常简单：在**即将**触发 UI 更新的状态变更**之前**调用它。
+- **实现步骤**
+
+  1. **导入 `LayoutAnimation`**
+
+     ```jsx
+     import { LayoutAnimation } from "react-native";
+     ```
+
+  2. **调用 `LayoutAnimation.configureNext()`**
+
+     - 在所有调用 `setShoppingList` 的函数中（例如 `handleSubmit`, `handleDelete`, `handleToggleComplete`），在 `setShoppingList` 这行代码的**正上方**添加 `LayoutAnimation.configureNext()`。
+     - `configureNext` 接收一个预设配置，最常用的是 `easeInEaseOut`，它提供了缓入缓出的动画效果。
+
+     ```jsx
+     // 在 handleDelete 函数中
+     const handleDelete = (id: string) => {
+       LayoutAnimation.configureNext(LayoutAnimation.presets.easeInEaseOut);
+       const newShoppingList = shoppingList.filter(...);
+       setShoppingList(newShoppingList);
+       // ...
+     };
+
+     ```
+
+  3. **应用到所有状态更新**
+     - 将 `LayoutAnimation.configureNext(...)` 添加到所有改变 `shoppingList` 状态的地方，确保所有列表变化都有动画。
+
+- **核心要点**
+  - `LayoutAnimation.configureNext()` 指示 React Native 为**下一次**的 UI 渲染（re-render）应用动画。
+  - 它影响的是下一次组件重绘时的布局变化，而不是紧随其后的下一行代码。React 的状态更新可能是批处理的，`LayoutAnimation` 会作用于该批处理更新后的整体 UI 变化。
+- **最终效果**
+  - 当删除一个项目时，它会平滑地消失，下面的项目会平滑地上移。
+  - 当一个项目因为状态改变而重新排序时（如标记为完成），它会平滑地移动到列表的新位置。
+
+---
+
+# 21-haptics
+
+- **目标**：通过添加触觉反馈（Haptic Feedback）来增强用户与应用交互的体验。
+- **什么是触觉反馈？**
+  - 它是指设备（如手机）通过轻微的振动来响应用户的触摸操作。
+  - 这是一种在 Web 应用中没有，但在移动应用中很常见的体验增强方式。
+  - 使用时应有节制，以避免过度干扰用户。
+- **实施步骤**
+
+  1. **安装 `expo-haptics` 库**
+
+     ```bash
+     npx expo install expo-haptics
+
+     ```
+
+  2. **导入库**
+
+     - 通常使用通配符导入，方便调用其下的各种方法和类型。
+
+     ```jsx
+     import * as Haptics from "expo-haptics";
+     ```
+
+  3. **了解主要的反馈类型**
+     - `impactAsync`: 产生一次冲击感振动，有不同强度 (`Light`, `Medium`, `Heavy`)。
+     - `notificationAsync`: 用于通知场景，有不同类型 (`Success`, `Warning`, `Error`)，通常比 `impact` 更明显。
+     - `selectionAsync`: 用于选择操作时的轻微反馈。
+
+- **在应用中添加触觉反馈**
+
+  - **删除项目时** (`handleDelete`)：
+    - 目标：提供中等强度的反馈。
+    - 在 `handleDelete` 函数中，调用 `Haptics.impactAsync`，并传入 `Medium` 强度。
+    ```jsx
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    ```
+  - **切换完成状态时** (`handleToggleComplete`)：
+
+    - 目标：区分“完成”和“取消完成”两种操作。
+    - 在 `handleToggleComplete` 函数中，找到正在被切换状态的项目。
+    - **标记为未完成**（item 之前是 completed）：提供中等强度的冲击反馈。
+
+    ```jsx
+    if (item.completedAtTimestamp) {
+      // If it was previously completed
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    ```
+
+    - **标记为已完成**（item 之前是 incomplete）：提供一次“成功”通知类型的反馈，这种反馈通常更强，更具提示性。
+
+    ```jsx
+    else { // If it's being marked as complete
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+
+    ```
+
+- **重要提示**
+  - 触觉反馈**无法在模拟器上体验**，必须在真实的物理设备上进行测试。
+  - 不同平台（iOS/Android）和不同设备型号的振动反馈强度和感觉可能会有所不同。
+
+# 22-push-notifications
+
+- **目标**：学习如何在应用中集成推送通知功能，重点是请求用户权限。
+- **推送通知（Push Notifications）概述**
+  - **远程通知 (Remote)**：由服务器发送，需要复杂的后端设置（如注册设备 token）。
+  - **本地通知 (Local)**：由应用本身在设备上预定和触发，无需服务器。本次课程主要实践本地通知。
+- **核心概念：请求权限**
+  - 在发送通知之前，必须首先征得用户的同意。
+  - **重要**：应用只能向用户请求一次原生权限弹窗。一旦用户选择“不允许”，应用就无法再次弹出该请求。用户必须手动去设备的“设置”中为该应用开启通知权限。
+- **实施步骤**
+
+  1. **安装所需库**
+
+     ```bash
+     npx expo install expo-notifications expo-device
+
+     ```
+
+     - `expo-notifications`: 用于处理通知的创建、发送和接收。
+     - `expo-device`: 用于检测应用是否运行在真实设备上（因为通知在模拟器上不起作用）。
+
+  2. **创建权限请求工具函数 (`utils/registerForPushNotificationsAsync.ts`)**
+     - 这是一个封装了请求权限复杂逻辑的辅助函数。
+     - **主要逻辑**：
+       a. 使用 `Device.isDevice` 检查是否为真机，如果不是则直接返回，避免在模拟器上操作。
+       b. 获取当前的权限状态 (`granted`, `undetermined`, `denied`)。
+       c. 如果状态已经是 `granted` 或 `denied`，则无需再次请求，直接返回。
+       d. 如果状态是 `undetermined`（从未请求过），则调用 `Notifications.requestPermissionsAsync()`，这会触发系统的原生权限请求弹窗。
+       e. 包含 Android 平台特有的“渠道(Channel)”设置代码，这是高版本 Android 系统的要求。
+  3. **在 UI 中添加触发按钮**
+     - 在一个页面（例如 Counter 页面）上，添加一个“Request Permission”按钮 (`TouchableOpacity`)。
+  4. **实现按钮的 `onPress` 事件处理函数**
+     - 创建一个 `async` 函数 `handleRequestPermission`。
+     - 在函数内部，`await` 调用刚才创建的 `registerForPushNotificationsAsync()` 工具函数。
+     - 可以通过 `console.log` 打印返回结果，查看权限状态。
+  5. **在真实设备上测试**
+     - 在 iOS 模拟器上运行，函数会因为 `Device.isDevice` 检查而直接返回 `null`。
+     - 在安卓或 iOS 真机上运行时：
+       - 首次点击按钮，会弹出系统权限请求弹窗。
+       - 如果用户点击“允许”，后续调用该函数将返回 `granted` 状态。
+       - 如果用户点击“不允许”，后续调用该函数将返回 `denied` 状态，并且不会再有弹窗。
+  6. **如何重置权限（供测试）**
+     - 如果用户拒绝了权限，开发者无法通过代码再次请求。用户需要手动操作：
+       - **iOS**: 进入“设置”->“通知”，找到 `Expo Go` 应用，然后打开通知开关。
+       - **Android**: 类似地在应用设置中找到通知权限并开启。
+
+# 23-scheduling-notifications
+
+- **目标**：在获得用户授权后，实际安排并发送一个本地推送通知。
+- **实施步骤**
+  1. **修改权限请求逻辑为安排通知**
+     - 将之前的 `handleRequestPermission` 函数重命名为 `scheduleNotification`。
+     - 在这个函数里，首先调用 `registerForPushNotificationsAsync()` 来确保权限已获取。
+  2. **检查权限结果并发送通知**
+     - 判断 `registerForPushNotificationsAsync()` 的返回结果。
+     - **如果权限是 'granted'**:
+       - 导入 `expo-notifications` 库: `import * as Notifications from 'expo-notifications';`
+       - 调用 `await Notifications.scheduleNotificationAsync({...})` 来安排一个通知。
+       - 这个函数需要一个配置对象，包含两个主要部分：
+         - `content`: 通知的显示内容，如 `title` 和 `body`。
+         - `trigger`: 触发通知的条件。最简单的用法是设置一个秒数，例如 `{ seconds: 5 }`，表示在 5 秒后触发。也可以设置为特定日期、时间间隔等。
+     - **如果权限未被授予**:
+       - 可以弹出一个 `Alert` 提示用户“无法安排通知，请在系统设置中为 Expo Go 开启通知权限”。
+       - 最好加上 `if (Device.isDevice)` 的判断，避免在模拟器上弹出这个提示。
+  3. **测试通知**
+     - **前景通知 vs. 背景通知**:
+       - **前景 (Foreground)**: 当应用正打开并显示在屏幕上时，收到的通知默认不会在系统的通知栏中显示。需要额外代码来处理前景通知的显示。
+       - **背景 (Background)**: 当应用被最小化或关闭时，收到的通知会正常显示在系统的通知栏中。
+     - **测试流程**:
+       a. 在真机上运行应用。
+       b. 点击“Schedule Notification”按钮。
+       c. **立即**将应用切换到后台（返回主屏幕）。
+       d. 等待设定的时间（例如 5 秒），系统通知栏中应出现你设置的通知。
+       e. 点击通知，可以重新打开应用。
+- **相关讨论：应用密钥文件（如 `GoogleServices.json`）与代码仓库**
+  - **问题**: 这类包含项目特定标识符的文件是否应该放入 `.gitignore`？
+  - **观点**:
+    1. **安全性**: 这些文件被打包进你的应用二进制文件中，最终会分发到用户的设备上。任何能够解包应用的人都可以看到这些内容。因此，它们本质上不属于“后端机密”（Server-side Secrets）。不应在其中存放真正的 API 密钥（如 OpenAI Key）。
+    2. **实践**: 很多团队仍然会因为 GitHub 的密钥扫描警告或团队规范而将它们移出 Git 仓库。
+    3. **解决方案**:
+       - 对于真正的机密信息，应将其存放在服务器上，由应用通过 API 调用来间接使用。
+       - 对于 `GoogleServices.json`这类文件，如果不想提交到 Git，可以使用 EAS (Expo Application Services) 提供的 `eas secrets` 功能，在构建时安全地注入这些文件。Expo 官方文档有相关示例。
+
+---
+
+# 24-creating-a-timer
+
+### 1. 目标：创建倒计时提醒功能
+
+- 我们将构建一个“计数器”或提醒功能，用于提醒用户定期执行某项任务（如换床单、洗车）。
+- UI 将显示一个倒计时（天/小时/分钟/秒）。
+- 当任务逾期时，背景会变成醒目的红色。
+- 用户可以点击按钮表示“已完成”，这会重置倒计时并安排一个新的未来通知。
+
+### 2. 实现每秒更新的 UI
+
+- 为了让 UI 每秒钟自动更新，我们需要结合使用 `useState` 和 `useEffect`。
+- **基本思路**:
+  1. 用 `useState` 来存储一个随时间变化的值（如“已过去的秒数”）。
+  2. 用 `useEffect` 来设置一个定时器 (`setInterval`)，该定时器每秒钟更新一次状态。
+- **`useEffect` 与 `setInterval` 的正确用法**:
+
+  - **设置定时器**: 在 `useEffect` 的回调函数中调用 `setInterval`。定时器每隔 1000 毫秒（1 秒）执行一次。
+  - **函数式更新**: 在 `setInterval` 内部更新 state 时，使用函数式更新 `setSeconds(prev => prev + 1)`。这可以避免因 `useEffect` 的闭包捕获到旧的 state 值而导致的问题。
+  - **清理定时器**: 这是**至关重要**的一步。`useEffect` 的回调函数可以返回一个**清理函数**。这个函数会在组件卸载前被调用。我们必须在这里调用 `clearInterval` 来清除定时器，以防止内存泄漏或多个定时器同时运行。
+
+  ```jsx
+  useEffect(() => {
+    // setInterval 返回一个 ID，用于后续清除
+    const intervalId = setInterval(() => {
+      // 使用函数式更新来确保总是基于最新的 state 进行计算
+      setSecondsElapsed((currentVal) => currentVal + 1);
+    }, 1000);
+
+    // 返回一个清理函数
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []); // 空依赖数组意味着这个 effect 只在组件首次挂载时运行一次
+  ```
+
+  - **警告**: 如果忘记清理定时器，每次组件重新加载（如在开发模式下的快速刷新）都会创建一个新的定时器，导致计数器越跳越快。
+
+### 3. 使用 `date-fns` 处理日期和时间
+
+- 在需要处理复杂日期计算或格式化的项目中，推荐使用专门的日期库。
+- **`date-fns`** 是一个非常流行且功能强大的库，它同样适用于 React Native。
+- **常用功能**:
+  - `format`: 将日期格式化成指定的字符串。
+  - `formatDistance`: 计算两个日期之间的时间差，并以自然语言描述（如 "12 days ago"）。
+- **安装**:
+
+  - 同样建议使用 `npx expo install` 来确保版本兼容性。
+
+    ```bash
+    npx expo install date-fns
+
+    ```
+
+  - `date-fns` 是一个纯 JS 库，Expo 的兼容性检查系统可能不会将其标记为“SDK compatible”，但这不影响使用。
+
+---
+
+# 25-tracking-countdown-overdue-time
+
+### 1. 创建 `TimeSegment` 可复用组件
+
+- 为了显示倒计时的每一部分（如“10 秒”），我们创建一个名为 `TimeSegment` 的可复用组件。
+- 它接收 `number` 和 `unit`作为 props。
+- 为了灵活控制样式（如在不同背景下改变文字颜色），它还接收一个可选的 `textStyle` prop。
+- 使用 TypeScript 的 `TextStyle` 类型可以确保传递给 `textStyle` prop 的是一个有效的样式对象。
+
+### 2. 管理倒计时的状态与逻辑
+
+### 定义数据结构 (TypeScript)
+
+- 创建一个 `CountdownStatus` 类型来统一管理倒计时的所有状态。
+
+```tsx
+import { Duration } from "date-fns";
+
+type CountdownStatus = {
+  isOverdue: boolean;
+  distance: Duration; // Duration 是 date-fns 提供的类型
+};
+```
+
+- `Duration` 对象包含 `years`, `months`, `days`, `hours`, `minutes`, `seconds` 等属性。
+
+### 使用 `useState` 存储状态
+
+- 使用 `useState<CountdownStatus>(...)` 来存储整个状态对象。
+
+### 在 `useEffect` 中计算时间差
+
+- 之前的 `setInterval` 逻辑保持不变，但其内部的计算逻辑需要更新。
+- **使用 `date-fns` 进行核心计算**:
+  1. **判断是否逾期**: 使用 `isBefore(dueDate, Date.now())`。如果截止日期在当前时间之前，则为逾期。
+  2. **计算时间差**: 使用 `intervalToDuration({ start, end })`。
+     - **注意**: `start` 日期必须早于 `end` 日期。因此需要根据是否逾期来动态调整 `start` 和 `end` 的值。
+- **示例逻辑**:
+
+```jsx
+// 假设 timestamp 是截止日期的时间戳
+const isOverdue = isBefore(timestamp, Date.now());
+
+const distance = intervalToDuration({
+  start: isOverdue ? timestamp : Date.now(),
+  end: isOverdue ? Date.now() : timestamp,
+});
+
+// 更新状态
+setStatus({ isOverdue, distance });
+```
+
+- 为了方便测试，可以先硬编码一个 `timestamp`，例如 `Date.now() + 10 * 1000` (10 秒后)。
+
+---
+
+# 26-countdown-timer-ui
+
+### 1. 条件渲染文本
+
+- 根据 `status.isOverdue` 的值，使用三元运算符来显示不同的提示文本。
+
+```jsx
+<Text style={styles.heading}>
+  {status.isOverdue ? "Thing overdue by" : "Thing due in"}
+</Text>
+```
+
+### 2. 渲染倒计时分段
+
+- 使用之前创建的 `<TimeSegment>` 组件来渲染倒计时的天、小时、分钟和秒。
+- 将它们包裹在一个 `<View>` 中，并使用 `flexDirection: 'row'` 使其水平排列。
+
+```jsx
+<View style={styles.row}>
+  <TimeSegment unit="days" number={status.distance.days ?? 0} />
+  <TimeSegment unit="hours" number={status.distance.hours ?? 0} />
+  {/* ...minutes and seconds */}
+</View>
+```
+
+- 使用空值合并操作符 (`?? 0`) 来处理 `status.distance` 中可能为 `undefined` 的值。
+
+### 3. 条件应用样式
+
+- 这个模式我们已经很熟悉了：利用**样式数组**来动态添加或移除样式。
+
+### 改变背景颜色
+
+- 在容器 `<View>` 的 `style` 属性中，根据 `status.isOverdue` 来决定是否添加红色背景的样式。
+
+```jsx
+<View style={[styles.container, status.isOverdue && styles.containerLate]}>
+  {/* ... */}
+</View>
+```
+
+### 改变文本颜色
+
+- 在红色背景下，文本需要变成白色才能看清。
+- 之前为 `<TimeSegment>` 和标题文本预留了 `textStyle` 属性，现在正好派上用场。
+- 创建一个 `styles.whiteText` 样式，其中 `color: 'white'`。
+- 根据 `status.isOverdue` 动态地传递这个样式。
+
+```jsx
+// 用于标题
+<Text style={[styles.heading, status.isOverdue && styles.whiteText]}>
+  ...
+</Text>
+
+// 用于 TimeSegment
+<TimeSegment
+  // ...
+  textStyle={status.isOverdue ? styles.whiteText : undefined}
+/>
+
+```
+
+---
+
+# 27-persisting-countdown-state
+
+### 1. 目标：持久化倒计时状态
+
+- 当前倒计时状态只存在于内存中，应用关闭后就会丢失。
+- 我们需要使用 `AsyncStorage` 来保存状态，以便在应用重新打开时恢复。
+
+### 2. 定义持久化数据结构
+
+- 定义一个 `PersistedCountdownState` 类型，专门用于描述需要存入 `AsyncStorage` 的数据。
+- **`currentNotificationId`**: 存储当前已安排的通知 ID。这非常重要，因为当用户提前完成任务时，我们需要用这个 ID 来**取消**旧的通知，避免不必要的提醒。
+- **`completedAtTimestamps`**: 一个时间戳数组，记录用户历次完成任务的时间，用于历史记录页面。
+
+```tsx
+type PersistedCountdownState = {
+  currentNotificationId: string | undefined;
+  completedAtTimestamps: number[];
+};
+```
+
+### 3. 状态管理流程
+
+1. **创建 State**:
+   - `const [countdownState, setCountdownState] = useState<PersistedCountdownState | undefined>(undefined);`
+   - 初始值为 `undefined`，表示数据尚未从存储中加载。
+2. **加载状态**:
+   - 使用一个单独的 `useEffect`，在组件挂载时从 `AsyncStorage` 中异步读取数据，并用 `setCountdownState` 更新状态。
+3. **计算截止时间**:
+   - 修改原有的 `useEffect`，使其依赖于 `countdownState`。
+   - 截止时间 (`timestamp`) 现在根据 `countdownState` 中的 `completedAtTimestamps` 的最新一项来计算，再加上任务频率（例如 10 秒）。
+   - 如果从未完成过，则使用 `Date.now()` 作为基准。
+4. **更新和保存状态 (完整流程)**:
+   - 当用户点击“我已完成”按钮时，触发 `handlePress` 函数：
+   - **a. (可选) 取消旧通知**: 检查 `countdownState.currentNotificationId` 是否存在。如果存在，调用 `Notifications.cancelScheduledNotificationAsync()` 取消旧的通知。
+   - **b. 安排新通知**: 调用 `scheduleNotification()` 安排一个新的通知，并获取其 `notificationId`。
+   - **c. 构建新状态**: 创建一个新的 `PersistedCountdownState` 对象。
+     - 更新 `currentNotificationId` 为新获取的 ID。
+     - 在 `completedAtTimestamps` 数组的**开头**添加当前的时间戳 (`Date.now()`)。
+   - **d. 更新内存状态**: 调用 `setCountdownState()` 更新组件内的状态，触发 UI 立即响应。
+   - **e. 保存到存储**: 调用 `saveToStorage()` 将新的状态对象异步写入 `AsyncStorage`。
+
+### 5. `useEffect` 的依赖项
+
+- 用于计算时间差的 `useEffect` 应该依赖于 `countdownState` 中实际影响计算的值，例如 `lastCompletedTimestamp`。
+- `useEffect(..., [lastCompletedTimestamp]);`
+- 当 `lastCompletedTimestamp` 改变时（即用户点击了按钮），这个 effect 会重新运行，先清理旧的 `setInterval`，然后用新的截止时间设置一个新的 `setInterval`。这确保了倒计时逻辑的正确更新。
+
+---
+
+# 28-activity-indicator
+
+### 1. 问题：UI 闪烁 (Flicker)
+
+- 当应用打开时，由于状态是从 `AsyncStorage` **异步**加载的，存在一个短暂的延迟。
+- 在此期间，组件会先使用其**初始状态**（例如，`isOverdue: false`，白色背景）进行渲染。
+- 当异步数据加载完成后，状态更新，UI 才切换到**真实状态**（例如，`isOverdue: true`，红色背景）。
+- 这个过程导致了从白屏到红屏的视觉闪烁，影响用户体验。
+
+### 2. 解决方案：使用加载指示器
+
+- 在数据加载期间，显示一个全屏的加载动画，而不是不完整或不正确的 UI。
+- React Native 提供了一个内置组件 **`<ActivityIndicator>`** 来实现这个效果。
+
+### 3. 实现步骤
+
+1. **添加 `isLoading` 状态**:
+   - 在组件中添加一个新的 `useState` 来追踪加载状态。
+   - `const [isLoading, setIsLoading] = useState(true);` // 默认为 true
+2. **更新加载状态**:
+   - 在从 `AsyncStorage` 获取到数据并设置完主要状态后，将加载状态设置为 `false`。
+   - `setIsLoading(false);`
+3. **条件渲染**:
+
+   - 在组件的 `return` 语句的开头，检查 `isLoading` 状态。
+   - 如果 `isLoading` 为 `true`，则提前返回加载指示器 UI。
+   - 否则，返回正常的应用 UI。
+
+   ```jsx
+   if (isLoading) {
+     return (
+       <View style={styles.activityIndicatorContainer}>
+         <ActivityIndicator size="large" color="#0000ff" />
+       </View>
+     );
+   }
+
+   return (
+     <View style={...}>
+       {/* 主要的应用界面 */}
+     </View>
+   );
+
+   ```
+
+### 4. 全屏居中样式
+
+- 一个非常常见的样式组合，用于让一个元素（如此处的加载指示器）在屏幕上全屏并居中。
+
+```jsx
+activityIndicatorContainer: {
+  flex: 1, // 占据父容器所有可用空间
+  justifyContent: 'center', // 沿主轴（纵向）居中
+  alignItems: 'center', // 沿交叉轴（横向）居中
+  backgroundColor: 'white', // 设置背景色
+}
+
+```
+
+---
+
+# 29-storing-timer-history
+
+### 1. 跨屏幕共享数据
+
+- `AsyncStorage` 是一个全局存储，不限于单个屏幕或组件。
+- 只要使用相同的**存储键 (storage key)**，任何屏幕都可以访问到同一份数据。
+- **实践**: 将 `countdownStorageKey` 和 `PersistedCountdownState` 类型从 `index.tsx` 文件中 `export` 出来，以便在 `history.tsx` 中导入和使用。
+
+### 2. 在 `History` 屏幕中加载数据
+
+- 这里的逻辑与在主屏幕中加载数据的逻辑几乎完全相同：
+  1. 用 `useState` 创建一个 `countdownState` 来存储从 `AsyncStorage` 中读取的数据。
+  2. 用 `useEffect` 在组件挂载时，调用封装好的 `getFromStorage` 工具函数，传入共享的 `countdownStorageKey` 来获取数据。
+  3. 用 `setCountdownState` 将获取到的数据存入 state。
+
+### 3. 使用 `FlatList` 渲染历史记录
+
+- `completedAtTimestamps` 是一个数组，非常适合使用 `<FlatList>` 来高效地渲染。
+- **`data`**: `countdownState?.completedAtTimestamps ?? []`
+- **`renderItem`**: 接收 `{ item }`，这里的 `item` 就是一个时间戳数字。
+- **`ListEmptyComponent`**: 为历史记录为空的情况提供友好的提示，例如“No history yet”。
+
+### 4. 使用 `date-fns` 格式化时间戳
+
+- 从存储中读取的时间戳是原始的数字格式，对用户不友好。
+- 使用 `date-fns` 的 `format` 函数可以将其转换为人类可读的日期和时间字符串。
+- **用法**:
+  - `import { format } from 'date-fns';`
+  - `format(timestamp, 'PPPpp')`
+    - 第一个参数是日期对象或时间戳。
+    - 第二个参数是格式化字符串。`date-fns` 提供了许多预设的格式，`PPPpp` 是一个例子，可以生成类似 "Jul 21, 2021, 9:28 PM" 的格式。
+
+```jsx
+// 在 renderItem 中
+<Text>{format(item, "PPPpp")}</Text>
+```
+
+---
+
+# 30-confetti-haptics
+
+### 1. 目标：增加应用的“愉悦感”
+
+- 在用户完成任务（点击按钮）时，通过触觉反馈和视觉效果（彩带）来提供积极的强化，提升用户体验。
+
+### 2. 添加触觉反馈 (Haptics)
+
+- 再次使用 `expo-haptics` 库。
+- 在 `handlePress` (或 `scheduleNotification`) 函数中，调用触觉反馈。
+- 这次使用 `NotificationFeedbackType.Success`，它会产生一个表示“成功”的、更强烈的震动效果。
+
+```jsx
+import * as Haptics from "expo-haptics";
+
+// 在按钮的 onPress 回调中
+Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+```
+
+### 3. 添加彩带效果 (`react-native-confetti-cannon`)
+
+- 这是一个有趣的第三方库，可以在屏幕上喷射出彩带。
+- **安装**:
+
+  ```bash
+  npx expo install react-native-confetti-cannon
+
+  ```
+
+- **核心概念：使用 `useRef` 编程式触发动画**
+  - 彩带动画不应该在页面加载时自动播放，而是在用户点击按钮时触发。
+  - **`useRef`**: React 的一个 Hook，可以创建一个可变的 `ref` 对象。将其附加到组件上，就可以获得对该组件实例的直接引用。
+  - **步骤**:
+    1. 创建 ref: `const confettiRef = useRef(null);`
+    2. 将 ref 绑定到组件: `<ConfettiCannon ref={confettiRef} ... />`
+    3. 在事件处理函数中调用组件方法: `confettiRef.current?.start();`
+
+### 4. 动态定位彩带
+
+- **问题**: 不同设备的屏幕尺寸不同，硬编码彩带的发射位置（如 `x: 100`）会导致在不同设备上位置不一致。
+- **解决方案**: 使用 React Native 的 `Dimensions` API 获取当前设备的屏幕尺寸。
+- **更好的方案：`useWindowDimensions` Hook**
+  - `import { useWindowDimensions } from 'react-native';`
+  - `const { width } = useWindowDimensions();`
+  - **优势**: 与 `Dimensions.get()` 只在应用启动时获取一次不同，`useWindowDimensions` Hook 会在屏幕尺寸变化（如设备旋转）时自动更新，使布局更具响应性。
+- **实现**: 将彩带的发射原点 `origin` 设置为屏幕中心。
+  ```jsx
+  <ConfettiCannon
+    // ...
+    origin={{ x: width / 2, y: -10 }} // y 设为负值，让彩带从屏幕顶部外发射
+  />
+  ```
+
+### 5. 其他配置
+
+- **`count`**: 彩带数量。
+- **`fadeOut`**: 彩带落下后是否淡出。
+- **`autoStart={false}`**: 禁用自动播放，以便我们通过 `ref` 来控制。
+
+---
+
+# 31-wrapping-up
+
+### 课程回顾
+
+本课程从零开始，带领我们构建了一个功能完整的 React Native 应用，涵盖了移动开发中的众多核心概念和技术：
+
+- **基础组件**: `<View>`, `<Text>`, `<ScrollView>`, 以及高性能的 `<FlatList>`。
+- **样式**: 学习了如何组织样式，并进行条件化应用。
+- **导航**: 使用 **Expo Router** 实现了：
+  - 底部标签页导航 (`Tabs`)
+  - 堆栈导航 (`Stack`)
+  - 模态框 (`Modal`)
+- **数据持久化**: 使用 `AsyncStorage` 在设备上保存和读取数据。
+- **用户交互与反馈**:
+  - 通过 `<TextInput>` 接收用户输入。
+  - 使用 `expo-haptics` 提供触觉反馈。
+  - 使用 `expo-notifications` 发送本地推送通知。
+- **增加愉悦感**: 通过添加彩带动画等视觉效果提升用户体验。
+
+### 后续学习
+
+- 课程有意在第三个屏幕留白，鼓励学员利用所学知识，动手实践，构建一个自己想要的实用小工具。
+- 这为从入门到实践提供了一个很好的起点。
