@@ -1,0 +1,1415 @@
+import { CourseLayout } from "@/components/CourseLayout";
+
+export const course = {
+  title: "Advanced Creative Coding with WebGL & Shaders",
+  imageUrl: "/courses/webgl-shaders.webp",
+  date: "2020-04-21",
+  author: {
+    name: "Matt DesLauriers",
+    imageUrl: "/authors/MattDesLauriers.webp",
+  },
+  description:
+    "深入学习使用WebGL、ThreeJS和GLSL进行创意编码和3D图形编程。在本课程中，你将学习3D向量和着色器效果。你所掌握的技能适用于许多领域，包括增强现实/虚拟现实（AR/VR）、游戏开发、交互式装置、媒体艺术等等。",
+};
+
+export const metadata = {
+  title: course.title,
+};
+
+export default (props) => <CourseLayout course={course} {...props} />;
+
+# 0-introduction
+
+- 本课程是关于 WebGL 和 GLSL 的进阶课程，将深入探讨 WebGL、着色器（shaders）和 Three.js。
+- 目标是分解渲染管线（pipeline）的工作原理，并理解一些底层细节。
+- **将使用的工具：**
+  - **Node.js**：用于在命令行运行 JavaScript 应用程序。
+  - **npm**：用于引入代码模块，不仅包括 JavaScript 模块，还包括 GLSL 着色器代码模块。
+  - **Glitch**：一个用于分享代码演示的在线平台（[glitch.com](http://glitch.com/)），方便他人查看和“remix”代码。
+  - **Canvas-Sketch**：一个为所有创意代码项目提供一致性框架的工具。它对于导出 mp4、GIF、高分辨率 PNG 图片以及在本地快速编码和查看结果非常有用。
+  - **Three.js**：一个建立在 WebGL 和 GLSL 之上的高级引擎，将作为本次课程中所有 3D 内容的主要引擎。它既适合基础操作，也提供了足够的功能来实现复杂的项目。
+
+# 1-webgl-glsl-three-js-overview
+
+- **什么是 WebGL？**
+  - 全称是 Web Graphics Library（网页图形库）。
+  - 它是 OpenGL（Open Graphics Library）的浏览器实现。OpenGL 是一项自 90 年代初就存在的老牌技术，是许多游戏和图形引擎（如 Doom 2016）的驱动力。
+  - WebGL 本质上是让我们能够利用计算机的 **GPU (图形处理单元)**。
+  - 它不仅限于 3D，也可以用于渲染 2D 图形，甚至可以用于执行复杂的并行计算（GPGPU），这些计算可能没有任何视觉输出。
+- **什么是 GLSL？**
+  - 全称是 OpenGL Shading Language（OpenGL 着色器语言）。
+  - 这是一种专门为 OpenGL 设计的编程语言，因此也适用于 WebGL。
+  - GLSL 程序（称为着色器）会被编译并在 GPU 上并行运行，速度极快，可以在一帧内运行数万甚至数百万次。
+  - 它**不是 JavaScript**，语法也不同。它需要为变量指定类型，例如 `float`（浮点数）、`int`（整数），以及专为图形编程设计的 `vec2`、`vec3`（向量）等。
+  - 在 JavaScript 代码中，GLSL 通常以多行模板字符串的形式存在，或者保存在单独的 `.glsl` 文件中然后被引入。
+- **什么是 Three.js？**
+  - 它是一个**高级框架**，构建于 WebGL 和 GLSL 之上。
+  - 它将 WebGL 和 GLSL 的复杂性封装起来，提供了一个简单易用的接口。
+  - 使用 Three.js 可以轻松加载 3D 模型、选择不同材质、使用内置几何体等。
+  - 虽然主要用于 3D，但因为它最终是操作 GPU，所以也可以用来制作 2D 或 2.5D 的游戏和应用。
+
+# 2-webgl-examples
+
+- **讲师的个人项目案例：**
+  - **Audiograph**：一个音乐可视化项目，利用 WebGL 绘制不断变化的图形来响应音乐节拍，即使在手机上也能高效运行。
+  - **Mozilla GDC Tech Demo**：一个为展示 WebGL 2 功能而制作的复杂技术演示。
+  - [Tendril.ca](http://tendril.ca/) Web Toy：一个简约的网页互动玩具，实现了无法用 SVG 或 Canvas 2D 达到的流畅动态和纹理细节。
+  - **KIKK Festival AR Experience**：一个在比利时艺术节上展出的增强现实作品，展示了 WebGL 在物理装置艺术中的应用。
+  - **Print Artwork**：一个数据艺术项目，将城市的摩天大楼数据可视化为生成式水晶结构。使用 WebGL 创建几何体，导出为 OBJ 文件，再导入 Blender 中进行高分辨率渲染，展示了 WebGL 作为创意工具超越实时应用的潜力。
+- **其他优秀项目案例：**
+  - **OUIGO, Let's Play**：一款性能极佳的网页弹珠游戏，在移动设备上运行流畅。
+  - [**bruno-simon.com**](http://bruno-simon.com/)：一个创意十足的个人作品集，用户可以驾驶一辆小车在 3D 世界中探索其项目。
+  - **Richard Vijgenn 的数据艺术**：通过硬件传感器和 WebSockets，将实时无线电波数据在 Three.js 应用中进行可视化。
+  - **Active Theory**：一家顶尖的创意工作室，他们大量使用 WebGL，并经常将其与心跳监视器等硬件传感器结合，创造互动装置。
+- **非 WebGL 但可用 WebGL 实现的案例：**
+  - 重点在于说明许多强大的视觉项目，其底层技术是可替换的。选择 Unity 还是 WebGL 通常取决于团队的技能和项目需求。
+  - **Universal Everything 的 "Future You"**：一个使用 Kinect 动作捕捉的互动装置。
+  - **Joanie Lemercier 的作品**：将计算机生成的视觉（可以用 WebGL 制作）投影到水雾上，创造出全息效果。
+  - **NONOTAK 的表演**：一个视听艺术二人组，他们通过投影映射技术在多层半透明屏幕上创造出独特的空间灯光装置，其视觉内容完全可以用 WebGL 生成。
+
+# 3-course-code-setup-canvas-sketch
+
+- **课程代码库：**
+  - 位于 GitHub: `mattdesl/workshop-webgl-glsl`。
+  - 这个仓库主要是资源和链接的集合，**不需要**克隆它来开始编码。我们将从零开始在本地创建项目。
+- **环境准备：**
+  - 需要熟悉命令行操作。
+  - 安装 **Node.js (v8 或更高版本)** 和 **npm (v6 或更高版本)**。
+  - 如果安装模块时遇到 `EACCESS` 权限错误，可以参考仓库指南中的故障排除部分。
+- **Canvas-Sketch 工具介绍：**
+
+  - 为创意编码项目提供一个**一致的结构**。
+  - 便于设置渲染尺寸、帧率等。
+  - 支持 `require` 语句，可以从 npm 引入模块。
+  - 内置对 **GLSL** 的支持。
+  - 非常适合导出高分辨率的 PNG、MP4 和 GIF 文件。
+  - **安装/更新命令**（建议重新安装以获取最新版本）：
+
+    ```bash
+    npm install canvas-sketch-cli --global
+
+    ```
+
+- **在线资源：**
+  - **互动指南**：课程附带的一系列幻灯片和互动演示。
+  - **Glitch Demos**：提供了一些基础的 Canvas-Sketch 和 Three.js 示例。可以查看代码、在线运行和“Remix”到自己的账户。这些主要用作参考和代码片段复制，但完整功能（如导出文件、使用 npm 模块）需要在本地开发环境中实现。
+- **创建你的第一个本地项目：**
+
+  1. 在终端中，进入你的工作目录（如桌面）。
+  2. 创建一个新文件夹并进入：`mkdir webgl` 然后 `cd webgl`。
+  3. 使用以下命令创建一个新的 Three.js 项目模板：
+
+     ```bash
+     canvas-sketch sketch.js --new --template=three
+
+     ```
+
+  4. 该命令会创建一个 `sketch.js` 文件，并启动一个本地开发服务器。
+  5. 在浏览器中打开 `http://localhost:9966` 即可看到一个 3D 场景。
+
+# 4-canvas-sketch-overview-settings
+
+- **Canvas-Sketch 运行与排错：**
+  - 如果 `canvas-sketch` 命令无法运行，请尝试重新全局安装 `canvas-sketch-cli`，重启终端，或检查 Node/npm 指南中的 EACCESS 权限问题。
+  - 某些浏览器插件（尤其在 Firefox 中）可能会干扰，使用干净的 Chrome 浏览器可能会更稳定。
+  - Canvas-Sketch 是一个辅助工具，一旦熟悉了 Three.js 的工作方式，没有它也可以进行 3D 编程。
+- **核心功能 - 实时重新加载：**
+  - 运行 `canvas-sketch sketch.js` 后，任何对代码文件的保存都会自动刷新浏览器中的视图。
+  - 例如，可以尝试修改 `setClearColor` 的颜色并保存来测试此功能。
+- **Canvas-Sketch 代码结构：**
+  - **`settings` 对象**：用于配置项目的基础设置，如尺寸、动画等。
+  - **`sketch` 函数**：包裹整个应用逻辑的地方。它最终返回一个对象，其中包含渲染（`render`）和尺寸调整（`resize`）等处理函数。
+- **重要的 `settings` 选项：**
+  - `dimensions`: 设置画布的固定尺寸，例如 `[512, 512]`。如果不设置，默认为全屏。
+  - `animate`: 设置为 `false` 可以创建一个静态图像，不进行循环渲染，有助于节省电量。
+  - `dimensions` 预设：可以使用纸张尺寸，如 `'letter'` (美国信纸), `'A4'`, `'A3'`。
+  - `orientation`: 设置方向为 `'landscape'` (横向) 或 `'portrait'` (纵向)。
+  - `units`: 当使用 `dimensions` 时，可以指定单位，如 `'in'` (英寸), `'cm'` (厘米)。
+  - `pixelsPerInch` (DPI): 为打印输出设置分辨率，例如 `300` DPI 可以获得高分辨率图像。
+  - `scaleToView`: 设置为 `true`。这个选项非常有用，它会在开发时将高分辨率的画布缩小以适应浏览器窗口，但在导出时（`Cmd+S`）仍然使用完整的高分辨率尺寸。这可以防止在开发过程中因画布过大而导致电脑卡顿。
+- **导出图像：**
+  - 确保画布被点击激活，然后按 `Cmd+S` (Mac) 或 `Ctrl+S` (Windows) 可以将当前帧保存为 PNG 文件到你的“下载”文件夹。
+- **`sketch` 函数详解：**
+  - 此函数接收一个包含 `context`、`canvas` 等属性的对象。
+  - 它需要返回一个对象，其中包含：
+    - `resize` 函数：当画布尺寸改变时被调用。
+    - `render` 函数：在动画循环中每一帧都被调用。
+    - `unload` 函数：用于清理资源，例如在 React/Vue 等框架中使用时。
+
+# 5-coordinate-systems
+
+- **坐标系基础**
+  - **2D 坐标系（常规）**：你可能熟悉的原点 `(0, 0)` 在左上角，x 轴向右增长，y 轴向下增长的系统。
+  - **WebGL/3D 坐标系（笛卡尔坐标系）**：
+    - 原点 `(0, 0, 0)` 位于**中心**。
+    - 坐标值可以是正数也可以是负数。例如，-x 表示向左，-y 表示向下。
+    - 这个以原点为中心的概念对于 3D 编程至关重要，因为所有物体的位置都是相对于这个中心点来定义的。
+- **3D 坐标系**
+  - 在 2D 坐标系的基础上增加了第三个轴：**Z 轴**，代表深度。
+  - 当我们从正前方（2D 视角）观察时，Z 轴的变化是不可见的。
+  - 只有当我们 **改变摄像机（视角）** 时，才能看到 Z 轴带来的深度感。
+  - 在 3D 空间中，没有“屏幕左上角”这样的绝对概念。一个物体在屏幕上的最终位置取决于它在世界中的位置、摄像机的位置以及摄像机的朝向。
+
+# 6-geometry-materials-mesh
+
+- **Three.js 的核心概念**
+  - **Vector3 (三维向量)**:
+    - 在 Three.js 中用于表示 3D 坐标 (`x`, `y`, `z`) 的数据类型。
+    - 常用方法包括 `.set(x, y, z)`、`.setScalar(value)`（将 x, y, z 设为相同的值）、`.copy(otherVector)` 等。
+  - **Color (颜色)**:
+    - 一个专门处理颜色的类，而非简单的字符串。
+    - 可以用十六进制码、颜色名或 RGB/HSL 字符串来初始化。
+    - 在代码中操作颜色时，其 RGB 和 HSL 值通常被**归一化**到 `0` 到 `1` 的范围。
+  - **Geometry (几何体)**:
+    - 定义了一个物体的**形状和结构**。
+    - 在 WebGL 中，所有形状都是由**三角形**构成的。例如，一个平面（`Plane` 或 `Quad`）是由两个三角形拼接而成的。
+    - Three.js 提供了许多内置的几何体，如 `BoxGeometry`（立方体）、`IcosahedronGeometry`（二十面体）等。
+    - 通过增加几何体的分段数（subdivisions），可以创建更多的顶点，从而可以对这些顶点进行编程操作，创造出复杂形体（如程序化生成的地形）。
+  - **Material (材质)**:
+    - 定义了物体表面的**外观和质感**。
+    - `MeshBasicMaterial`: 一种**不受光照影响**的材质，会直接显示你设置的颜色。
+    - `MeshPhongMaterial`, `MeshStandardMaterial` 等：**受光照影响**的材质。如果场景中没有光源，使用这些材质的物体会是黑色的。
+    - `flatShading`: 一个可以设置的属性，`true` 会让物体表面呈现出分明的面片感（低多边形风格），`false`（默认）则是平滑的。
+  - **Mesh (网格)**:
+    - 场景中的最终可见物体。
+    - 它是由一个 **Geometry (形状)** 和一个 **Material (材质)** 组合而成的。
+    - **性能优化提示**：尽可能地**复用** `Geometry` 对象。创建一个几何体，然后用它来创建多个不同的 `Mesh`。
+
+# 7-position-scene
+
+- **变换物体 (Transform)**
+  - **Position (位置)**:
+    - `mesh.position` 是一个 `Vector3` 对象，用于设置物体在 3D 空间中的位置。
+    - 可以通过 `mesh.position.set(x, y, z)` 来精确设置。
+  - **Rotation (旋转)**:
+    - `mesh.rotation` 是一个 `Euler` 对象，其工作方式与 `Vector3` 类似，也包含 `x`, `y`, `z` 三个分量。
+    - **理解旋转轴**:
+      - **Y 轴 (上下)**: 围绕 Y 轴旋转就像在原地打转。
+      - **X 轴 (左右)**: 围绕 X 轴旋转就像做前滚翻。
+      - **Z 轴 (前后)**: 围绕 Z 轴旋转就像做侧手翻。
+    - **记忆技巧 (右手坐标系)**：伸出右手，做出“手枪”姿势，拇指朝上，食指朝前。然后中指弯曲，与食指垂直。
+      - **拇指** -> Y 轴 (上)
+      - **食指** -> Z 轴 (前)
+      - **中指** -> X 轴 (右)
+  - **Scale (缩放)**:
+    - `mesh.scale` 也是一个 `Vector3` 对象，用于分别控制物体在 X、Y、Z 轴上的大小。
+- **Scene (场景)**
+  - 场景（Scene）是所有 3D 物体的**容器**，类似于 HTML 的 DOM 树。
+  - 创建一个场景后，必须使用 `scene.add(mesh)` 将物体（Mesh）添加进去，物体才能被渲染。
+  - **调试提示**：如果你创建了一个物体但它没有显示，首先检查你是否已经将它添加到了场景中。
+
+# 8-three-js-setup
+
+- **Three.js 基础模板代码解析**
+  - **目标练习**：以一个地球和一个环绕它的月亮为例，学习如何设置场景、摄像机、以及添加纹理。
+- **关键组件解析**
+  - **Renderer (渲染器)**:
+    - Three.js 的核心引擎，负责将场景绘制到 `canvas` 上。
+    - 可以设置背景颜色，例如用 `renderer.setClearColor('black')` 设置为黑色。
+  - **Camera (摄像机)**:
+    - 我们使用 `PerspectiveCamera` (透视摄像机)。
+    - **Field of View (FOV)**: 视野角度，通常设置在 45-75 度之间。
+    - **Aspect Ratio**: 画布的宽高比，会在窗口大小改变时更新，以防图像拉伸。
+    - **Near / Far Clipping Planes**: 近/远剪裁平面。定义了摄像机能看到的距离范围，超出这个范围的物体将不会被渲染。
+    - **Position**: 摄像机的位置。为了能看到位于原点 `(0,0,0)` 的物体，需要将摄像机向后移动，例如 `camera.position.z = -4`。
+    - **lookAt**: 设置摄像机朝向的点，例如 `camera.lookAt([0, 0, 0])` 使其朝向世界中心。
+  - **Controls (控制器)**:
+    - `OrbitControls` 是一个 Three.js 的扩展，用于添加鼠标交互功能（拖拽、缩放、旋转）。
+    - 如果你的项目不需要交互，可以注释掉相关代码。
+  - **Scene Objects (场景对象)**:
+    - **Scene**: 创建一个空的场景容器 `new THREE.Scene()`。
+    - **Geometry**: 定义物体的形状，如 `SphereGeometry`（球体）。
+    - **Material**: 定义物体的外观，如 `MeshNormalMaterial` 或带 `wireframe` 的 `MeshBasicMaterial`。
+    - **Mesh**: 将几何体和材质组合成网格对象，并用 `scene.add(mesh)` 将其添加到场景中。
+  - **渲染循环与尺寸调整**:
+    - 这部分逻辑（在 canvas-sketch 模板中已设置好）负责：
+      - 在每一帧调用 `renderer.render(scene, camera)` 来绘制图像。
+      - 当窗口大小改变时，更新渲染器和摄像机的尺寸与宽高比。
+
+# 9-applying-images-to-spheres
+
+- **给球体添加纹理**
+
+  1. **准备图片**：将 `earth.jpg` 和 `moon.jpg` 图片文件拖入项目文件夹，与 `sketch.js` 放在同一目录下。
+  2. **加载纹理**：在 Three.js 中，使用 `TextureLoader` 来加载图片文件。
+
+     ```jsx
+     const loader = new THREE.TextureLoader();
+     const earthTexture = loader.load("earth.jpg");
+     const moonTexture = loader.load("moon.jpg");
+     ```
+
+     - 这样做会将图片加载到 GPU，以便在材质中使用。
+     - 建议创建一个 `loader` 实例并复用它来加载多个纹理，这样更高效。
+
+- **应用纹理**
+  - 要应用纹理，需要使用支持贴图的材质，如 `MeshBasicMaterial` 或 `MeshStandardMaterial`。
+  - 在材质的属性中，使用 `map` 属性来指定纹理。
+    ```jsx
+    const earthMaterial = new THREE.MeshBasicMaterial({
+      map: earthTexture,
+    });
+    ```
+- **创建第二个物体（月球）**
+  1. 创建一个新的 `Mesh` 作为月球。
+  2. 为了能看到它，需要改变它的位置和大小。
+     - 使用 `moonMesh.position.set(x, y, z)` 将其移开地球。
+     - 使用 `moonMesh.scale.setScalar(value)` 将其缩小。
+  3. 为月球创建一个新的材质，并应用月球纹理。
+  4. 将新的材质应用到月球的 `Mesh` 上。
+- **添加动画**
+  - 在 `canvas-sketch` 的 `render` 函数中，可以访问一个 `time` 属性，它表示自应用开始以来的总秒数。
+  - 通过将物体的旋转属性与 `time` 关联，可以创建动画。
+    ```jsx
+    // 在 render 函数内
+    earthMesh.rotation.y = time * 0.1; // 旋转地球
+    moonMesh.rotation.y = time * 0.05; // 旋转月球
+    ```
+  - 旋转的值是以 **弧度（radians）** 为单位的。乘以一个小数可以减慢旋转速度。
+
+# 10-grouping-hierarchy
+
+- **问题**：如何让月球围绕地球公转，而不是只在原地自转？
+- **解决方案：使用 `Group` 和层级结构**
+  - 在 Three.js 中，`Group` 是一个不可见的容器对象，类似于 HTML 中的 `<div>`，可以用来组织场景中的其他对象。
+  - 通过将一个物体（月球）添加到一个 `Group` 中，然后旋转这个 `Group`，就可以实现该物体围绕一个中心点（地球）的轨道运动。
+- **实现步骤：**
+
+  1. 创建一个新的 `Group` 作为月球的“轨道锚点”：
+
+     ```jsx
+     const moonGroup = new THREE.Group();
+     ```
+
+  2. 将月球的 `Mesh` 添加到这个 `Group` 中，**而不是直接添加到场景中**：
+
+     ```jsx
+     moonGroup.add(moonMesh);
+     ```
+
+  3. 将这个 `Group` 添加到主场景中，这样它和它包含的子对象才能被渲染：
+
+     ```jsx
+     scene.add(moonGroup);
+     ```
+
+  4. 在动画循环（`render` 函数）中，旋转这个 `Group`：
+
+     ```jsx
+     moonGroup.rotation.y = time * 0.5;
+     ```
+
+- **结果**：现在，月球会随着 `moonGroup` 的旋转而围绕场景原点（地球所在的位置）运动，同时月球自身的自转动画仍然有效。
+
+# 11-lighting-material-texture
+
+- **目标：** 从一个均匀光照的场景（使用 `MeshBasicMaterial`）过渡到一个有明暗、更具戏剧性的场景。
+- **添加光源 (Light)**
+
+  1. 创建一个光源，例如 `PointLight`（点光源），它像一个灯泡，向所有方向发光。
+
+     ```jsx
+     const light = new THREE.PointLight("white", 1.0); // 颜色和强度
+     ```
+
+  2. 将光源添加到场景中：`scene.add(light)`。
+  3. **改变光源位置**：默认情况下，光源在 `(0,0,0)`，如果物体也在原点，光源会被物体遮挡。需要移动光源的位置，例如：`light.position.set(3, 3, 3)`。
+
+- **使用受光照的材质 (Material)**
+  - `MeshBasicMaterial` **不受**光照影响。
+  - 需要将材质更换为受光照的类型，例如 `MeshStandardMaterial`，这是一种高质量的通用材质。
+    ```jsx
+    // 之前
+    // new THREE.MeshBasicMaterial({ map: texture });
+    // 之后
+    new THREE.MeshStandardMaterial({ map: texture });
+    ```
+- **调整材质表面属性**
+  - `MeshStandardMaterial` 默认看起来可能有点像金属，有光泽。这是由 `roughness` 和 `metalness` 属性控制的。
+  - `roughness` (粗糙度): `0` 表示完全光滑（像镜子），`1` 表示完全粗糙（无反光）。
+  - `metalness` (金属度): `0` 表示非金属，`1` 表示金属。
+  - 对于地球和月球，我们希望它们看起来更像粗糙的岩石表面，所以设置：
+    ```jsx
+    new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 1,
+      metalness: 0,
+    });
+    ```
+- **调整光照强度**
+  - 可以通过增加光源的强度值，或者将光源移近物体来使场景更亮。
+
+# 12-light-grid-helper
+
+- **Helpers (辅助对象)**
+  - Helpers 是 Three.js 中用于在开发和调试时可视化场景中不可见元素的工具。它们通常是线框形状，在最终发布时应被移除或注释掉。
+- **`PointLightHelper` (点光源辅助对象)**
+  - **作用**：在场景中绘制一个小的菱形来显示点光源的确切位置。
+  - **使用方法**：
+    ```jsx
+    // 传入要辅助的光源对象和可选的辅助图形大小
+    scene.add(new THREE.PointLightHelper(light, 0.1));
+    ```
+- **`GridHelper` (网格辅助对象)**
+  - **作用**：在场景中绘制一个平面网格，帮助我们更好地理解空间方向和比例。
+  - **使用方法**：
+    ```jsx
+    // 传入网格大小和分割数
+    scene.add(new THREE.GridHelper(5, 10));
+    ```
+- **`AxesHelper` (坐标轴辅助对象)**
+  - **作用**：在场景原点绘制红、绿、蓝三条线，分别代表 X、Y、Z 轴，帮助确定方向。
+  - **使用方法**：
+    ```jsx
+    scene.add(new THREE.AxesHelper(size));
+    ```
+- **重启开发服务器**
+  - 如果在终端中运行的 `canvas-sketch` 服务卡住或出错，可以按 `Ctrl+C` 来停止它。
+  - 然后通过再次运行 `canvas-sketch sketch.js` 来重启服务。
+
+# 13-units-scale
+
+- **将光源与物体组合**
+  - 可以将光源（`light`）添加到 `moonGroup` 中，这样光源就会随着月球一起围绕地球旋转，形成动态的光影效果。
+- **Three.js 中的单位 (Units)**
+  - Three.js 中的单位是**任意的、无量纲的**。它不是像素、米或英寸。
+  - 这个单位是你自己定义的。你可以决定 `1` 个单位代表 `1` 米、`1` 英里或者 `1` 厘米。
+  - **最佳实践**：
+    - 在开始一个项目时，确定一个统一的单位标准（例如，`1` 单位 = `1` 米）。
+    - 所有物体的尺寸（`scale`）、位置（`position`）都应该遵循这个标准。
+    - 例如，如果你做一个游戏，你可以测量一个真实咖啡杯的高度（比如 10 厘米），然后在你的场景中将它的模型高度设置为 `0.1`（如果你的单位是米）。
+  - 对于小型的艺术草图，通常使用一个归一化的范围，例如 `0`到`1`，其中`1`代表一个“默认”大小。
+- **应用到太阳系模拟**
+  - 理论上，你可以使用真实的太阳系数据（如行星半径、轨道距离，单位可以是英里或公里），然后将这些数值应用到场景中。
+  - 这会使得行星之间的距离变得非常巨大，你可能需要移动摄像机很远才能看到它们。
+
+# 14-gpgpu-for-computation
+
+- **GPGPU (通用目的 GPU 编程)**
+  - 这是一种利用 GPU 强大的并行计算能力来执行**非图形渲染任务**的技术。
+  - 在 Three.js 中，这通常意味着使用着色器（Shaders）来进行大量的数学计算，而不是直接绘制颜色。
+  - **应用案例**:
+    - **粒子系统**: 计算成千上万个粒子的新位置、速度和行为（如鸟群算法、水流模拟）。
+    - **物理模拟**: 进行复杂的物理计算。
+    - **非视觉任务**: 在后台进行信号处理、视频解码等计算密集型任务。
+  - **工作流程**:
+    1. 在着色器中执行计算。
+    2. 将计算结果（例如，新的粒子位置）输出到一个纹理中。
+    3. 在下一帧，另一个着色器读取这个纹理的数据，并用它来渲染最终的视觉效果。
+  - **WebGL 2** 对 GPGPU 提供了更好的支持，使得这类应用更加高效和方便。
+
+# 15-light-scene-wrap-up
+
+- **课程进展小结与展望**
+  - 我们已经完成了基础的地球与月球场景，如果想继续深入，可以探索更复杂的灯光效果，如：
+    - 将点光源做得像一个燃烧的太阳。
+    - 为地球添加辉光或大气边缘光（Rim Lighting）。
+  - **接下来的重点**：我们将转向更深入地理解 **几何体（Geometry）** 和 WebGL 的渲染管线，这对于创造更独特的视觉效果至关重要。
+- **参考 `light_material` 演示**
+  - 这个演示展示了如何使用**多个不同颜色的光源**。
+  - 当不同颜色的光线混合时，可以创造出丰富而漂亮的视觉效果。
+  - 演示中的运动效果是利用 `Math.cos` (余弦函数) 实现的。
+
+# 16-texture-mapping
+
+- **纹理贴图术语**
+  - **Equirectangular / Panoramic / HDR / Environment Map**: 这些术语都可用于描述可以完美贴在球体上的全景图片，例如我们用的地球纹理。
+- **为非球体几何体贴图**
+  - 以一个甜甜圈形状（`TorusGeometry`）为例，演示如何处理非球体表面的贴图。
+- **无缝贴图 (Seamless Texturing)**
+
+  - **问题**：默认情况下，纹理会被拉伸以适应整个模型表面，导致变形和丑陋的接缝。
+  - **解决方案**：
+
+    1. **设置包裹模式 (Wrapping)**：告诉 Three.js 纹理应该重复而不是拉伸。
+
+       ```jsx
+       texture.wrapS = THREE.RepeatWrapping;
+       texture.wrapT = THREE.RepeatWrapping;
+       ```
+
+    2. **设置重复次数 (Repeat)**：控制纹理在水平和垂直方向上重复的次数，以调整纹理的“密度”或“大小”。
+
+       ```jsx
+       texture.repeat.set(4, 2); // 水平重复4次，垂直重复2次
+       ```
+
+- **PBR 纹理 (Physically Based Rendering)**
+  - PBR 是一种旨在模拟真实世界光照物理的渲染技术。它通常使用一套纹理贴图来定义材质表面。
+  - **常见 PBR 贴图类型**：
+    - **Diffuse Map (或 Albedo/Color Map)**: 定义了物体的基础颜色（如砖块的红色）。
+    - **Normal Map**: 一张特殊的蓝紫色调纹理，它不改变模型的几何形状，但能模拟表面细节（如砖块的凹凸不平），使光照效果更逼真。
+    - **Metalness Map**: 一张灰度图，定义了表面哪些部分是金属（白色），哪些是非金属（黑色）。
+    - **Roughness Map**: 一张灰度图，定义了表面哪些部分是粗糙的（白色），哪些是光滑的（黑色）。
+- **使用法线贴图 (Normal Map)**
+  - 在 `MeshStandardMaterial` 中，通过 `normalMap` 属性来应用法线贴图。
+    ```jsx
+    new THREE.MeshStandardMaterial({
+      map: diffuseTexture, // 颜色贴图
+      normalMap: normalTexture, // 法线贴图
+    });
+    ```
+  - **问题**：有时法线贴图看起来是“反的”（凹进去的看起来像凸出来的）。
+  - **原因**：可能是因为法线贴图是为其他渲染引擎（如 Unity）制作的，它们的坐标系（特别是 Y 轴方向）可能不同。
+  - **解决方案**：通过 `normalScale` 属性来翻转 Y 轴。
+    ```jsx
+    material.normalScale.y = -1; // 翻转Y轴
+    ```
+  - `normalScale` 也可以用来调整法线效果的整体强度。
+- **UV 映射 (UV Mapping)**
+  - 对于复杂的 3D 模型（如人物、杯子），需要在 3D 建模软件（如 Blender, Cinema 4D）中进行 **UV 展开**。这个过程就像把 3D 模型的表面“剥下来”并摊平成 2D 平面，以便正确地将 2D 纹理贴上去。这是 3D 艺术家的工作范畴。
+
+# 17-custom-geometry
+
+- **目标：理解几何体的构成**
+  - 为了理解更高级的着色器（特别是顶点着色器），我们需要先了解顶点（vertex）是如何被定义和组织的。
+  - 我们将从零开始创建一个最基础的形状：一个三角形。
+- **创建自定义几何体 `THREE.Geometry`**
+  - `THREE.Geometry` 是一个较旧但更易于理解的创建自定义形状的类。它允许我们手动定义顶点和面。
+  - **步骤 1: 定义顶点 (`vertices`)**
+    - 创建一个顶点数组，数组中的每个元素都是一个 `THREE.Vector3` 对象，代表一个 3D 空间中的点。
+      ```jsx
+      // 一个三角形需要三个顶点
+      geometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0)); // 左上
+      geometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0)); // 右下
+      geometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0)); // 左下
+      ```
+    - **注意坐标系**：在 WebGL 中，Y 轴通常是向上的为正，向下的为负，这可能与 2D 绘图的习惯相反。
+  - **步骤 2: 定义面 (`faces`)**
+    - 定义了顶点之后，需要告诉 Three.js 如何将这些点连接起来形成一个面（即一个三角形）。
+    - 面的定义是通过引用顶点数组的**索引 (index)** 来完成的。
+      ```jsx
+      // 使用顶点数组的第0, 1, 2个顶点来创建一个面
+      geometry.faces.push(new THREE.Face3(0, 1, 2));
+      ```
+- **渲染自定义几何体**
+  - 创建好 `geometry` 对象后，还需要像之前一样创建 `Mesh` 并添加到场景中才能看到它。
+    ```jsx
+    const material = new THREE.MeshBasicMaterial({ color: "red" });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    ```
+- **重要细节与问题**
+  - **单面渲染**：默认情况下，为了性能，Three.js 只会渲染三角形的一个面。当你旋转到背面时，它会消失。
+    - **解决方案**: 在材质中设置 `side: THREE.DoubleSide`，使其成为双面材质。
+  - **法线 (Normals)**：当使用受光照的材质（如 `MeshNormalMaterial`）时，自定义几何体会显示为黑色。
+    - **原因**: 自定义几何体没有法线信息。法线是一个向量，告诉渲染器每个顶点或每个面的朝向，这对光照计算至关重要。
+    - **解决方案**: 调用 `geometry.computeVertexNormals()`，让 Three.js 自动为我们计算法线。
+- **扩展到四边形 (Quad)**
+  - 一个四边形由两个三角形组成。
+  - 为了性能，我们应该**复用顶点**而不是为第二个三角形创建全新的三个顶点。
+  - **步骤**:
+    1. 为四边形添加第四个顶点。
+    2. 添加第二个 `Face3`，使用正确的顶点索引来定义第二个三角形。
+    - 确定正确的索引顺序可能有点棘手，有时甚至需要反复试验。
+- **总结**
+  - 手动创建几何体并不常用，通常我们会使用内置的几何体（如 `PlaneGeometry`）然后去**修改它的顶点**。
+  - 但理解其工作原理是学习着色器的重要基础。例如，你可以获取一个平面的几何体，然后通过编程方式随机移除它的一些面（`geometry.faces`），从而创造出有趣的效果。
+
+# 18-buffer-geometry
+
+- **什么是 `BufferGeometry`?**
+  - `BufferGeometry` 是 Three.js 中一个**更现代、性能更高**的几何体类。
+  - 与 `Geometry` 使用 `Vector3` 数组来存储顶点不同，`BufferGeometry` 使用更底层的**类型化数组（Typed Arrays）**，如 `Float32Array`。
+- **`BufferGeometry` 的数据结构**
+  - 它将所有的顶点数据“压平”到一个一维数组中。
+  - 例如，三个顶点的坐标 `{x:0, y:1, z:0}, {x:2, y:3, z:4}, {x:5, y:6, z:7}` 会被存储为 `[0, 1, 0, 2, 3, 4, 5, 6, 7]`。
+  - 这种结构更接近 GPU 的处理方式，因此效率更高。
+- **为什么使用 `BufferGeometry`?**
+  - **性能**: 对于包含大量顶点（如数千个粒子、复杂模型）的场景，`BufferGeometry` 性能远超 `Geometry`。它能将大量物体打包成一个“批次”，通过一次绘制调用（draw call）就发送给 GPU，大大减少了开销。
+  - **自定义属性 (Custom Attributes)**: 这是 `BufferGeometry` 的一个核心优势。它允许你为每个顶点传递自定义数据到 **着色器 (Shaders)** 中。例如，可以为每个粒子传递一个随机颜色、大小或者一个初始速度。这是使用 `Geometry` 无法实现的。
+- **适用场景**
+  - **加载外部数据**: 当你需要从一个大数据文件（如 CSV, JSON）中加载成千上万个点（如星空图）来可视化时。
+  - **粒子系统**: 高效渲染大量的粒子。
+  - **数据可视化**: 当需要根据数据动态生成和渲染大量几何元素时。
+- **学习建议**
+  - `BufferGeometry` 的设置比 `Geometry` 更复杂，不适合初学者直接上手。
+  - 一个常见的实践方法是：
+    1. 从一个内置的几何体开始（如球体 `SphereGeometry`）。
+    2. 访问并**修改**它的 `BufferGeometry` 中的顶点数据，例如使用噪声函数随机化每个顶点的位置。
+  - 这样可以避免手动构建所有三角形和顶点的复杂性，同时又能利用 `BufferGeometry` 的强大功能。
+
+# 19-shadertoy
+
+- **什么是 Shader?**
+  - Shader（着色器）是一个在 GPU（图形处理单元）上运行的**微型程序**。
+  - 它的代码通常用一种类似 C 语言的语言编写，称为 GLSL (OpenGL Shading Language)。
+  - 因为在 GPU 上运行，Shaders 可以利用大规模的并行计算能力，执行速度极快，非常高效。
+- [Shadertoy.com](http://shadertoy.com/) 简介
+  - 这是一个著名的在线社区和平台，用于创建和分享 **Fragment Shaders**（片段着色器，也叫像素着色器）。
+  - 上面的作品通常非常复杂和炫酷，很多都是通过纯数学计算来生成复杂的 2D 和 3D 视觉效果。
+  - **一个重要的概念**：Shadertoy 上的许多 3D 效果是一种“黑客”行为。它们使用本应只处理表面颜色和质感的片段着色器，通过复杂的数学（如光线追踪/光线行进）来“伪造”出三维几何体。
+  - 这种方法通常非常消耗计算资源（“烧显卡”），且代码难以阅读（充满了单字母变量和复杂的数学公式）。
+  - 我们将不会编写如此复杂的着色器，但 Shadertoy 是一个很好的灵感来源和参考网站。
+- **课程目标**
+  - 我们将学习如何使用着色器来**操纵真实几何体（如球体）的表面**，而不是从零开始用数学构建它们。
+  - 我们将区分并学习两种主要的着色器：**Fragment Shader** 和 **Vertex Shader**。
+
+# 20-fragment-shaders
+
+- **Fragment Shader (片段/像素着色器) 基础**
+  - **核心任务**: 决定一个像素（或片段）的**最终颜色**。
+  - 它会在一个区域（如一个矩形或一个 3D 模型的表面）内的**每一个像素**上独立运行。
+- **GLSL (着色器语言) 语法要点**
+  - **`precision highp float;`**: 这是一个标准开头，用于声明浮点数（`float`）使用高精度。通常直接复制粘贴。
+  - **强类型语言**: 与 JavaScript 不同，GLSL 是强类型的。在声明变量时必须指定其类型。
+    - `float`: 浮点数 (e.g., `1.0`)
+    - `int`: 整数 (e.g., `1`)
+    - `vec2`, `vec3`, `vec4`: 包含 2、3、4 个浮点数的向量，类似于 Three.js 的 `Vector2/3/4`。
+  - **`void main() { ... }`**: 每个着色器都有一个 `main` 函数作为其入口点。`void` 表示该函数没有返回值。
+  - **严格语法**:
+    - 必须以分号结尾。
+    - 对浮点数使用小数点（如 `2.0` 而不是 `2`）是一个好习惯，因为在某些环境下，`2` 会被当作整数，导致类型错误。
+  - **向量运算**: 可以对整个向量进行数学运算，如 `vec2 a / vec2 b;`，这会分别对 x 和 y 分量进行除法运算，代码更简洁。
+- **并行计算 (The Key Concept)**
+  - GPU 的强大之处在于**并行处理**。当一个 Fragment Shader 应用到一个矩形上时，它**同时**计算该矩形内所有像素的颜色，而不是像 for 循环一样一个一个地计算。
+  - **重要限制**: 因为是并行计算，一个像素的着色器程序**无法知道**其邻居像素的信息（如颜色、位置）。它只能根据输入信息独立计算自己的颜色。这是一种与传统 CPU 编程非常不同的思维模式。
+- **GLSL 数据类型与访问**
+  - `sampler2D`: 用于存储和访问纹理（图片）。
+  - `mat4`: 4x4 矩阵，用于坐标变换。
+  - **访问向量分量 (Swizzling)**:
+    - 可以通过 `.x`, `.y`, `.z`, `.w` 访问单个分量。
+    - 也可以通过 `.xy`, `.xyz` 等组合访问多个分量。
+    - 对于颜色，还可以使用 `.r`, `.g`, `.b`, `.a` 作为别名。
+
+# 21-vertex-shaders
+
+- **Vertex Shader (顶点着色器) 基础**
+  - **核心任务**: 接收一个 3D 模型的**单个顶点**的原始数据（如位置），并计算出它在 2D 屏幕上的**最终位置**。
+  - 它会在模型的**每一个顶点**上独立、并行地运行。
+  - 与 Fragment Shader 类似，一个顶点的着色器程序也**无法知道**其邻居顶点的信息。
+- **Vertex Shader 的工作流程 (坐标变换)**
+  1. **输入**: 获取顶点的**本地坐标**（Model Space），即在模型自身坐标系中的位置。
+  2. **模型变换**: 将顶点从本地坐标转换到**世界坐标**（World Space），这考虑了物体在整个场景中的位置、旋转和缩放。
+  3. **视图变换**: 将顶点从世界坐标转换到**摄像机坐标**（View Space），这考虑了摄像机的位置和朝向。
+  4. **投影变换**: 将顶点从摄像机坐标转换到**裁剪空间**（Clip Space），这一步是最关键的，它应用了摄像机的投影类型（透视投影或正交投影），最终将 3D 坐标“压平”成可以在 2D 屏幕上显示的坐标。
+     - **透视投影 (Perspective)**: 近大远小，有深度感。
+     - **正交/等轴测投影 (Orthographic/Isometric)**: 没有深度感，所有物体大小保持不变，常用于策略游戏或风格化的艺术作品（如《纪念碑谷》）。
+  5. **输出**: 最终的顶点位置被赋给一个特殊变量 `gl_Position`。
+- **在 Vertex Shader 中操纵几何体**
+  - Vertex Shader 的强大之处在于，在进行上述标准变换的**过程中**，我们可以**修改顶点的原始位置**。
+  - 例如，可以接收一个外部传入的 `stretch` 值，然后用它来改变顶点在某个轴向上的位置，从而实现拉伸、扭曲、波动等动画效果。
+  - 通过修改 `position` 属性，我们可以创造出程序化的几何动画，而无需在 CPU 端手动更新成千上万个顶点。
+
+# 22-basic-glsl-fragment-shader
+
+- **Fragment Shader 输出**
+  - `gl_FragColor`: 这是一个特殊的内置变量，代表着色器最终输出的颜色。它是一个 `vec4` 类型，包含 RGBA 四个分量。
+    - `gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // 纯红色，不透明`
+- **从 JavaScript 向 Shader 传递数据：`uniform`**
+  - **`uniform`**: 是一种在 GLSL 中声明的变量，它的值由**外部的 JavaScript 程序**在渲染前指定。
+  - **特性**:
+    - 在 Shader 内部是**只读的**，不能被赋值。
+    - 它的值在一次绘制调用中对**所有**顶点或像素都是**统一的 (uniform)**，不会改变。
+  - **目的**: 允许我们从 JavaScript 控制 Shader 的行为，例如传入时间、颜色、动画参数等。
+- **从几何体向 Shader 传递数据：`attribute`**
+  - **`attribute`**: 这是**顶点着色器 (Vertex Shader)** 专属的一种变量类型。
+  - 它的值来自于 3D 模型的**几何体数据**，并且**每个顶点的值都可以是不同的**。
+  - **常见 `attribute`**:
+    - `position`: 顶点的 3D 位置。
+    - `normal`: 顶点的法线方向。
+    - `uv`: 顶点的纹理坐标。
+  - 使用 `BufferGeometry` 时，我们可以定义和传递**自定义的 `attribute`**，为每个顶点附加额外的数据。
+- **Three.js 对 Shader 的简化**
+  - **无需 `precision`**: Three.js 会自动处理精度声明。
+  - **内置 `uniform`**: 像摄像机矩阵、模型变换矩阵这些复杂的 `uniform`，Three.js 会自动提供，我们无需手动声明。可以直接在代码中使用它们（如 `projectionMatrix`, `modelViewMatrix`）。
+  - **`ShaderMaterial`**: 这是 Three.js 中用于创建自定义着色器材质的类。
+    - **`vertexShader`**: 一个包含顶点着色器 GLSL 代码的字符串。
+    - **`fragmentShader`**: 一个包含片段着色器 GLSL 代码的字符串。
+    - **`uniforms`**: 一个 JavaScript 对象，用于定义要传递给 Shader 的 `uniform` 变量及其初始值。
+      - 语法：`{ myColor: { value: new THREE.Color('tomato') } }`
+- **透明度处理**
+  - 如果你的着色器需要处理半透明效果（即 alpha 值小于 1.0），除了在 `gl_FragColor` 中设置 alpha 值，还必须在 `ShaderMaterial` 的属性中设置 `transparent: true`。
+
+# 23-custom-shader-setup
+
+- **目标：** 创建一个简单的带有渐变色的立方体，作为学习着色器的起点。
+- **项目设置**
+
+  1. 在终端中停止之前的服务 (`Ctrl+C`)。
+  2. 使用 `canvas-sketch` 创建一个新的 Three.js 模板文件：
+
+     ```bash
+     canvas-sketch shader.js --new --template=3
+
+     ```
+
+  3. 用代码编辑器打开新创建的 `shader.js` 文件。
+
+- **从 `MeshBasicMaterial` 到 `ShaderMaterial`**
+  1. 将几何体从 `SphereGeometry` 改为 `BoxGeometry`。
+  2. 将材质从 `MeshBasicMaterial` 改为 `new THREE.ShaderMaterial()`。
+  3. **默认效果**：在不提供任何着色器代码的情况下，一个空的 `ShaderMaterial` 在 Three.js 中会默认显示为**红色**。
+- **编写着色器代码**
+  - **语法高亮**：为了在 JavaScript 字符串中获得 GLSL 语法高亮，可以安装 VS Code 插件：
+    1. `Shader languages support for VS Code`
+    2. `Comment tagged templates`
+    - 安装后，可以在模板字符串前使用特殊注释来启用高亮：`/* glsl */ \\` ... \``
+  - **定义 `fragmentShader`**:
+    ```jsx
+    const fragmentShader = /* glsl */ `
+      void main() {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // 红色
+      }
+    `;
+    ```
+  - **应用到材质**:
+    ```jsx
+    const material = new THREE.ShaderMaterial({
+      fragmentShader: fragmentShader, // 或者直接用 fragmentShader
+      // ... 稍后会添加 vertexShader 和 uniforms
+    });
+    ```
+- **着色器调试 (Shader Debugging)**
+  - **错误日志**: 如果着色器有语法错误，浏览器控制台会打印出大量红色错误信息。仔细阅读错误信息，它通常会指出出错的**行号**和原因。
+  - **没有 `console.log`**: 无法在着色器中打印日志。
+  - **调试技巧**: **将你想查看的数值可视化为颜色**。
+    - 将一个不确定范围的 `float` 值（比如 `a`）映射到 `0.0` 到 `1.0` 的范围。
+    - 将它设置为灰度颜色：`gl_FragColor = vec4(vec3(a), 1.0);`。
+    - 观察物体的颜色：如果是黑色，表示 `a` 可能为 0 或负数；如果是白色，表示 `a` 可能为 1 或更大；灰色则表示在 0 和 1 之间。这是一种间接的“打印”方法。
+
+# 24-custom-gradient-shader
+
+- **着色器数据流管线 (The Waterfall)**
+  1. **几何体 (Geometry)**: 原始数据源，包含顶点位置、UV、法线等 `attributes`。
+  2. **顶点着色器 (Vertex Shader)**: 接收几何体的 `attributes`，处理后输出最终的顶点位置 (`gl_Position`)，并可以把一些数据通过 `varying` 变量传递下去。
+  3. **片段着色器 (Fragment Shader)**: 接收从顶点着色器传递过来的 `varying` 变量，计算并输出最终的像素颜色 (`gl_FragColor`)。
+  4. **渲染 (Rendering)**: 最终的图像显示在屏幕上。
+- **从 Vertex Shader 向 Fragment Shader 传递数据: `varying`**
+  - **`varying`**: 这是一种特殊的变量，用于在顶点着色器和片段着色器之间“桥接”数据。
+  - **工作原理**:
+    1. 在**顶点着色器**中声明一个 `varying` 变量，并给它赋值。例如，将 Three.js 内置的 `uv` (纹理坐标) 赋给一个我们自定义的 `varying vec2 vUv`。
+    2. 在**片段着色器**中声明一个**同名、同类型**的 `varying` 变量。
+    3. 当 GPU 处理时，它会自动对顶点之间的数据进行**插值 (interpolate)**。例如，如果一个顶点的 `vUv` 是 `(0,0)`，另一个是 `(1,0)`，那么它们连线中间的像素接收到的 `vUv` 值就是 `(0.5, 0)`。
+  - **为什么叫 `varying`?**: 因为它的值在模型的表面上是**变化的 (varying)**，而不是像 `uniform` 那样是统一的。
+- **实现步骤**
+
+  1. **Vertex Shader**:
+
+     ```glsl
+     varying vec2 vUv; // 声明 varying
+
+     void main() {
+       vUv = uv; // 将内置的 uv attribute 赋值给 varying
+       // ... 默认的 gl_Position 计算 ...
+     }
+
+     ```
+
+  2. **Fragment Shader**:
+
+     ```glsl
+     varying vec2 vUv; // 声明同名、同类型的 varying
+
+     void main() {
+       // 使用 varying 的值来确定颜色
+       gl_FragColor = vec4(vec3(vUv.x), 1.0); // 根据 x 坐标创建从黑到白的渐变
+     }
+
+     ```
+
+  - **基本顶点着色器代码**: 为了避免记住复杂的矩阵乘法，可以直接从课程提供的代码片段中复制标准的顶点着色器 `main` 函数内容。
+
+# 25-passing-data-into-shaders
+
+- **回顾：从 JavaScript 传递数据到 Shader**
+  - 我们使用 `uniforms` 属性在 `ShaderMaterial` 中定义要传递的数据。
+  - `uniforms` 是一个 JavaScript 对象，其键是 `uniform` 变量在 GLSL 中的名字。
+- **`uniforms` 的语法结构**
+  - 每个 uniform 都需要一个特定的对象结构，其中包含一个 `value` 属性。
+  - `value` 可以是 Three.js 的特定类型（如 `THREE.Color`, `THREE.Vector3`），也可以是普通的 JavaScript 数字 (`number`)。
+    ```jsx
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        // uniform 名字是 'color'
+        color: {
+          // 它的值是一个 Three.js 的 Color 对象
+          value: new THREE.Color("tomato"),
+        },
+      },
+    });
+    ```
+- **在 Shader 中接收 `uniform`**
+
+  1. 在 GLSL 代码中，使用 `uniform` 关键字声明一个与 JavaScript 中**同名、同类型**的变量。
+
+     - 如果 JavaScript 传入的是 `THREE.Color` 或 `THREE.Vector3`，GLSL 中对应的类型是 `vec3`。
+     - 如果传入的是 `number`，GLSL 中对应的类型是 `float`。
+
+     ```glsl
+     // 在 fragment shader 的顶部
+     uniform vec3 color;
+
+     void main() {
+       // ...
+       // 现在可以在代码中使用 'color' 变量了
+       vec3 finalColor = someGradient * color;
+       gl_FragColor = vec4(finalColor, 1.0);
+     }
+
+     ```
+
+  2. `uniform` 变量会同时被发送到**顶点着色器**和**片段着色器**，你可以在两者中都声明并使用它。
+
+- **总结**
+  - **`attribute`**: 每个顶点都不同的数据，源自几何体。
+  - **`varying`**: 在顶点着色器中设置，在片段着色器中接收，GPU 会对其进行插值。
+  - **`uniform`**: 对所有顶点/像素都相同的数据，源自 JavaScript。
+  - 这是着色器编程最核心、最繁重的部分。理解了这套数据传递机制，就可以开始进行更有趣的创作了。
+
+# 26-texture-coordinates
+
+- **什么是 `UV` 坐标?**
+  - `UV` 坐标（也叫纹理坐标）是附加在 3D 模型每个顶点上的 2D 坐标。
+  - 它告诉渲染器如何将一个 2D 的纹理图像“包裹”或“映射”到 3D 模型的表面上。
+  - 通常，`U` 对应于纹理的水平方向（X 轴），`V` 对应于垂直方向（Y 轴）。U 和 V 的值通常都在 `0.0` 到 `1.0` 的范围内。
+- **可视化 `UV` 坐标**
+  - 我们可以通过在片段着色器中直接输出 `UV` 坐标的分量来将其可视化。
+  - `gl_FragColor = vec4(vec3(vUv.x), 1.0);` 会显示一个从左到右由黑变白的水平渐变。
+  - `gl_FragColor = vec4(vec3(vUv.y), 1.0);` 会显示一个垂直渐变。
+  - **注意**: 在 WebGL 或 Three.js 中，Y 轴（或 V 坐标）有时是“反的”，即 `0.0` 在底部，`1.0` 在顶部。
+- **`UV` 坐标与几何体**
+  - 不同的几何体有不同的 `UV` 展开方式。一个立方体的面展开后是平的，而一个球体展开后是扭曲的，就像世界地图一样。
+  - 当我们将 `UV` 坐标可视化时，可以看到：
+    - **立方体**: 每个面都有一个从 (0,0) 到 (1,1) 的平整渐变。
+    - **球体**: 渐变会围绕球体包裹，并在两极出现扭曲。
+- **创建动画：使用 `time` Uniform**
+
+  1. **在 JavaScript 中定义 `uniform`**:
+
+     ```jsx
+     const material = new THREE.ShaderMaterial({
+       uniforms: {
+         time: { value: 0 }, // 初始化 time 为 0
+       },
+     });
+     ```
+
+  2. **在 GLSL (着色器) 中声明 `uniform`**:
+
+     ```glsl
+     uniform float time;
+
+     ```
+
+  3. **在渲染循环中更新 `uniform`**:
+
+     ```jsx
+     // 在 render 函数中
+     material.uniforms.time.value = time; // `time` 是 canvas-sketch 提供的
+     ```
+
+  4. **在着色器中使用 `time`**:
+     - 可以使用 `sin(time)` 或 `cos(time)` 来创建平滑的、在 -1 和 1 之间循环的动画效果。
+     - 例如，`vUv.x + sin(time)` 会让颜色渐变来回摆动。
+     - 结合 `sin` 和 `cos` 可以创建出循环的颜色变化。
+
+- **创作方式：实验与探索**
+  - 使用着色器创作很多时候不是一个有明确目标的过程，而是一个不断实验和探索的过程。
+  - 随意地调整数值、组合函数，观察结果的变化，常常会发现一些意想不到的“快乐小意外 (happy accidents)”，这些意外可能最终会成为你的作品。
+
+# 27-example-shader-inspiration
+
+- **创作意图与灵感来源**
+  - 与其漫无目的地实验，不如设定一个创作目标。这次的目标是**模拟艺术家草间弥生 (Yayoi Kusama) 的作品风格**。
+  - **关键元素**: 波点 (polka dots)，圆形，重复的无缝图案。
+- **创作过程的分解 (从简单到复杂)**
+  1. **基础原型 (Cube)**: 先在一个简单的立方体上实现重复的圆形图案。这是技术验证的第一步。
+  2. **迁移到球体 (Sphere)**: 将立方体上的图案应用到球体上。这一步会暴露一些问题。
+     - **问题**: 使用传统的 UV 贴图方式，在球体的两极会出现图案**拉伸和扭曲**，并且在 UV 接缝处会有明显的断裂。
+  3. **寻找更好的几何布局 (Icosahedron)**: 为了解决两极拉伸的问题，我们可以寻找一种顶点分布更均匀的几何体。
+     - **二十面体 (`IcosahedronGeometry`)**: 这是一个由等边三角形组成的球状体，它的顶点分布非常均匀。
+  4. **基于顶点生成图案 (Geometric Approach)**:
+     - 我们可以获取二十面体的**所有顶点位置**。
+     - 在每个顶点的位置上，放置一个小小的圆形平面 (`CircleGeometry`) 或者一个小球体。
+     - **优点**: 完美地解决了图案分布不均的问题。
+     - **缺点**: 这种方法是在球体表面“贴”上了真实的几何体，从侧面看会有厚度，不够“平滑”。
+  5. **最终方案 (Shader Approach)**:
+     - 将二十面体的顶点位置作为 `uniform` 数组传递给着色器。
+     - 在**片段着色器**中，计算当前像素到**所有**这些顶点（波点中心）的最近距离。
+     - 根据这个距离来决定像素是画成波点的颜色还是背景色。
+     - **优点**: 图案是“画”在球体表面上的，完全平滑，效果完美。
+     - **缺点**: 实现起来数学上更复杂。
+  6. **打磨与完善**:
+     - 添加更多球体。
+     - 引入光照 (`MeshStandardMaterial` 的着色器变体)。
+     - 添加更多细节和装饰。
+- **核心思想**: 这是一个典型的迭代开发过程，从一个简单的想法开始，不断发现问题、寻找解决方案，并逐步完善，最终达到理想的效果。
+
+# 28-circular-mask-pattern
+
+- **目标：** 在一个平面上绘制一个重复的圆形图案。
+- **步骤 1: 绘制单个圆心**
+
+  1. **定义中心点**: `vec2 center = vec2(0.5, 0.5);`。因为 UV 坐标是从 0 到 1，所以 (0.5, 0.5) 是平面的中心。
+  2. **计算距离**: 使用 `distance(p1, p2)` 函数计算当前像素的 UV 坐标 `vUv` 到 `center` 的距离。
+
+     ```glsl
+     float d = distance(vUv, center);
+
+     ```
+
+  3. **可视化距离**: 将距离值 `d` 作为颜色输出，会得到一个从中心向外扩散的**径向渐变**。中心为黑色 (距离=0)，边缘为白色 (距离>0)。
+  4. **创建遮罩 (Mask)**: 根据距离阈值来决定像素是黑还是白。
+     - **使用 `if` 或三元运算符**: `float mask = d > 0.25 ? 1.0 : 0.0;`
+     - **使用 `step` 函数 (更优)**: `float mask = step(0.25, d);`。`step(edge, x)` 函数当 `x < edge` 时返回 `0.0`，当 `x >= edge` 时返回 `1.0`。这是一种高效的阈值判断方法。
+  5. **反转遮罩**: 如果想让圆是白色，背景是黑色，可以 `mask = 1.0 - mask;`。
+
+- **步骤 2: 重复图案**
+
+  1. **放大坐标**: 将 `vUv` 坐标乘以一个整数（例如 `8.0`）。现在坐标范围从 `0.0-1.0` 变成了 `0.0-8.0`。
+  2. **取模运算 (Modulo)**: 使用 `mod(x, 1.0)` 函数将放大后的坐标值限制在 `0.0-1.0` 的范围内。这会导致坐标在每次达到整数时“折返”到 0，从而形成重复的网格。
+
+     ```glsl
+     // 将 vUv 乘以 N，然后在 0-1 之间重复
+     vec2 pos = mod(vUv * 8.0, 1.0);
+
+     ```
+
+  3. **使用新坐标**: 用 `pos` 替代之前的 `vUv` 来计算到中心点的距离。现在，每个 1x1 的网格内都会有一个独立的圆形图案。
+
+- **步骤 3: 添加动画**
+
+  - 将 `step` 函数的阈值（即圆的大小）与 `time` 关联起来，可以使圆的大小产生动态变化。
+
+    ```glsl
+    float size_threshold = 0.25 + sin(time) * 0.1;
+    float mask = step(size_threshold, d);
+
+    ```
+
+  - 通过组合使用 `vUv` 和 `time`，可以创建出更复杂的、随位置和时间变化的动画效果，比如像“熔岩灯”一样的视觉。
+
+# 29-color-interpolation-with-mix
+
+- **目标：** 将黑白图案替换为自定义颜色。
+- **`mix` 函数 (线性插值)**
+  - `mix` 是 GLSL 中的一个内置函数，用于在两个值之间进行线性插值。
+  - **语法**: `mix(a, b, t)`
+  - **工作原理**:
+    - `a`: 起始值（当 `t=0.0` 时返回 `a`）。
+    - `b`: 结束值（当 `t=1.0` 时返回 `b`）。
+    - `t`: 插值因子，一个介于 `0.0` 和 `1.0` 之间的浮点数。
+    - **公式**: `a * (1.0 - t) + b * t`。
+  - `mix` 可以用于任何可插值的类型，如 `float`, `vec2`, `vec3`, `vec4`。
+- **使用 `mix` 上色**
+
+  1. 我们有一个 `mask` 变量，它的值是 `0.0`（背景）或 `1.0`（圆形）。
+  2. 我们可以用这个 `mask` 作为 `mix` 函数的 `t` 值。
+  3. **定义颜色**:
+     - `a`：背景色。我们可以使用从 JavaScript 传入的 `uniform color`。
+     - `b`：圆形的颜色。例如，我们可以用白色 `vec3(1.0)`。
+  4. **应用 `mix`**:
+
+     ```glsl
+     // 声明一个 uniform 颜色
+     uniform vec3 color;
+
+     // ... 计算 mask ...
+
+     // 使用 mix 进行颜色插值
+     vec3 finalColor = mix(color, vec3(1.0), mask);
+
+     // 输出最终颜色
+     gl_FragColor = vec4(finalColor, 1.0);
+
+     ```
+
+  - **结果**:
+    - 当 `mask` 是 `0.0` 时，`finalColor` 会是 `color` (背景色)。
+    - 当 `mask` 是 `1.0` 时，`finalColor` 会是 `vec3(1.0)` (白色圆形)。
+
+# 30-translating-mask-onto-a-sphere
+
+- **问题**: 当把之前在立方体上正常显示的圆形图案应用到球体 (`SphereGeometry`) 上时，圆形会被压扁成椭圆形。
+- **原因**:
+  - 球体的 UV 展开方式类似于地球的**等距圆柱投影（Equirectangular projection）**。
+  - 这种投影将球体表面展开成一个 2:1 比例的矩形。这意味着 **U (水平) 坐标的范围实际上是 V (垂直) 坐标范围的两倍长**。
+  - 由于我们的 `mod(vUv * N, 1.0)` 对 U 和 V 使用了相同的重复因子，导致水平方向的图案被“挤压”了。
+- **解决方案**:
+  - 在进行取模运算之前，我们需要**校正 UV 坐标的比例**。
+  - 将 U (水平) 坐标乘以 2，使其与 V 坐标的“感知长度”相匹配。
+- **实现步骤**:
+
+  1. 创建一个新的 `vec2` 变量来存储校正后的 UV 坐标。
+
+     ```glsl
+     vec2 q = vUv;
+
+     ```
+
+  2. 将新变量的 `x` 分量（即 U 坐标）乘以 2。
+
+     ```glsl
+     q.x *= 2.0;
+
+     ```
+
+  3. 在后续的 `mod` 运算和距离计算中，使用这个校正后的 `q` 变量，而不是原始的 `vUv`。
+
+     ```glsl
+     vec2 pos = mod(q * 8.0, 1.0);
+     float d = distance(pos, vec2(0.5));
+     // ...
+
+     ```
+
+  - **结果**: 球体上的圆形现在看起来更圆了，因为我们补偿了 UV 展开带来的比例失真。
+
+# 31-mapping-uv-coordinates-on-shapes
+
+- **UV 坐标在不同几何体上的表现**
+  - 理解 UV 坐标在不同形状上的展开方式对于着色器编程至关重要。
+  - **球体 (`SphereGeometry`)**:
+    - `vUv.x` (U 坐标): 沿着球体的“经线”环绕，从接缝处的 `0.0` 增加到另一侧的 `1.0`。
+    - `vUv.y` (V 坐标): 沿着球体的“纬线”分布，从一个极点（如北极）的 `1.0`（白色）平滑过渡到另一个极点（南极）的 `0.0`（黑色）。
+  - **圆环体 (`TorusGeometry`)**:
+    - `vUv.x` (U 坐标): 沿着圆环的大圈环绕。
+    - `vUv.y` (V 坐标): 沿着圆环的截面小圈环绕。
+  - **所有内置几何体都有 UV 坐标**，但它们的布局各不相同，因此同一个着色器在不同几何体上会产生不同的视觉效果和伪影（artifacts）。
+- **球体 UV 贴图的固有问题 (Artifacts)**
+  - **接缝问题 (Seam)**: 在 U 坐标从 `1.0` 跳变回 `0.0` 的地方，会有一条明显的接缝。
+  - **极点畸变 (Pole Distortion)**: 在 V 坐标接近 `0.0` 和 `1.0` 的两极，所有经线都汇聚到一个点上，导致 UV 坐标被极度压缩和拉伸。这会使任何基于 UV 的图案在两极附近严重变形。
+- **结论**
+  - 使用基于**笛卡尔坐标系 (Cartesian coordinates)** 的 `UV` 贴图来处理球体表面，不可避免地会遇到接缝和极点畸变的问题。
+  - 这是一个经典的“地图投影问题”，就像我们无法将地球表面完美地展平成一张矩形地图一样。
+  - 为了在球体上实现均匀的图案，需要采用不同于标准 UV 映射的策略（例如，三平面映射或基于 3D 坐标的程序化生成）。
+
+# 32-adding-glsl-noise
+
+- **目标：** 让所有圆形的大小产生随机变化，使其看起来更自然，更像草间弥生的作品。
+- **使用 GLSL 噪声库**
+  - 噪声（Noise）是一种程序化生成伪随机、但又具有连续性的数值的方法。
+  - 我们将使用一个名为 `glsl-noise` 的 NPM 模块。
+- **`glslify`：在 GLSL 中使用模块**
+
+  - `glslify` 是一个工具，它允许你在 GLSL 着色器代码中使用类似 Node.js 的 `require()` 语法来导入 NPM 上的 GLSL 模块。
+  - **设置步骤**:
+
+    1. **安装依赖**:
+
+       ```bash
+       npm install glslify glsl-noise
+
+       ```
+
+    2. **在 JavaScript 中引入 `glslify`**:
+
+       ```jsx
+       const glsl = require("glslify");
+       ```
+
+    3. **使用 `glslify` 包裹着色器字符串**:
+
+       ```jsx
+       const fragmentShader = glsl(`
+         // 你的 GLSL 代码在这里
+       `);
+       ```
+
+- **在 GLSL 中导入和使用噪声**
+
+  1. **导入噪声函数**: 在 GLSL 代码的顶部，使用特殊的 `#pragma` 指令来导入 `glsl-noise` 模块中的特定噪声函数。
+
+     ```glsl
+     #pragma glslify: noise = require('glsl-noise/simplex/3d')
+
+     ```
+
+     - 这里我们导入了 3D 单纯形噪声 (Simplex Noise)。
+
+  2. **创建噪声输入**:
+     - 噪声函数的输入决定了输出的“随机”值。为了让每个圆圈的尺寸不同，我们需要为每个圆圈提供一个**独一无二**的输入坐标。
+     - `floor(q * 10.0)`: 我们通过放大并取整校正后的 UV 坐标 `q`，来获得每个圆圈所在网格的整数坐标。这样，同一个网格内的所有像素都会得到相同的噪声输入，从而确保整个圆圈的大小是一致的。
+  3. **调用噪声函数**:
+     - `noise(vec3(input, time))`: 调用噪声函数。我们将二维的网格坐标和一个随时间变化的 `time` 值组合成一个三维向量作为输入。这样，噪声不仅随位置变化，还随时间产生动画。
+  4. **应用噪声**:
+
+     - 将噪声的输出值（通常在 -1 到 1 之间）乘以一个较小的数（例如 `0.1`）来缩放其影响范围，然后将其加到圆圈的基础尺寸上。
+
+     ```glsl
+     vec2 noiseInput = floor(q * 10.0);
+     float offset = noise(vec3(noiseInput, time)) * 0.1;
+
+     float size_threshold = 0.25 + offset;
+     float mask = step(size_threshold, d);
+
+     ```
+
+- **结果**: 现在每个圆圈的大小都会根据其位置和当前时间产生平滑的、看起来随机的变化。
+
+# 33-glsl-noise
+
+- **噪声 (Noise) 的核心概念**
+  - 噪声函数是一种**伪随机函数**。与纯粹的 `random()` 函数不同，噪声函数的输出是**连续的**：如果你输入两个相近的坐标，你会得到两个相近的输出值。
+  - 可以把噪声想象成一个**随机起伏的波浪**。
+- **类比正弦波 (Sine Wave)**
+  - **输入与输出**: 正弦函数 `sin(x)` 接收一个输入 `x`，返回一个在 -1 到 1 之间平滑振荡的输出。噪声函数也类似，但其振荡模式是随机的，而不是规则的。
+  - **频率 (Frequency)**: `sin(x * frequency)`。乘以频率会**压缩或拉伸**波形。在噪声中，高频意味着细节更丰富、变化更快；低频意味着变化更平缓、更模糊。
+  - **振幅 (Amplitude)**: `sin(x) * amplitude`。乘以振幅会**增加或减小**波形的起伏高度。
+  - **相位 (Phase)**: `sin(x + phase)`。增加相位会**平移**波形。
+- **噪声的维度 (Dimensions)**
+  - **1D 噪声**: 输入一个坐标（如 `x`），输出一个值。可以用来生成一维的随机曲线。
+  - **2D 噪声**: 输入两个坐标（如 `x` 和 `z`），输出一个值。可以用来生成二维的随机地形（高度图）或云彩纹理。
+  - **3D 噪声**: 输入三个坐标（如 `x`, `y`, `z` 或 `x`, `z`, `time`），输出一个值。
+    - 如果第三个维度是**时间 (`time`)**，那么 2D 图案就会产生随时间**流动、演变**的动画效果。这就像你在一个 2D 的随机地形上“切片”，并让切片的位置随时间移动。
+- **在着色器中的应用**
+  - 在我们的波点着色器中，我们使用了 3D 噪声：
+    1. `x` 和 `y` 坐标来自于每个圆圈网格的整数坐标 (`floor(q * N)`)。这确保了每个圆圈有一个独特的“基础”噪声值。
+    2. `z` 坐标是 `time`。这使得每个圆圈的大小能够随时间平滑地变化。
+  - **`floor()` 的作用**: 如果不使用 `floor()`，噪声会被应用到每个像素上，导致图案内部出现波浪状的纹理，而不是整个圆圈大小的一致变化。`floor()` 将输入“量化”，使得一个网格内的所有像素共享同一个噪声输入，从而得到我们想要的效果。
+
+# 34-icosahedron-geometry
+
+- **问题回顾**: 使用标准球体 (`SphereGeometry`) 和 UV 贴图的方式在球体两极会产生严重的图案畸变。
+- **新的思路：使用更均匀的几何体**
+  - **二十面体 (`IcosahedronGeometry`)**: 这是一个由 20 个等边三角形组成的几何体，它的顶点分布比标准球体要均匀得多。
+  - **策略**: 我们不直接渲染这个二十面体，而是把它当作一个“脚手架”，只**利用它的顶点位置**来确定我们波点的中心。
+- **实现步骤**
+
+  1. **清理旧代码**: 我们可以复制一份之前的着色器项目，然后清理掉片段着色器中复杂的代码，暂时只输出一个纯色。
+  2. **创建基础几何体**:
+
+     ```jsx
+     const baseGeom = new THREE.IcosahedronGeometry(1, 0); // 半径为1，细节为0
+     ```
+
+     - **注意**: `IcosahedronGeometry` 的第二个参数（细节等级）不宜设置过大，否则会产生大量顶点，可能导致浏览器崩溃。
+
+  3. **获取顶点**:
+
+     ```jsx
+     const points = baseGeom.vertices;
+     ```
+
+  4. **循环放置物体**: 遍历 `points` 数组，在每个顶点的位置上创建一个新的网格（`Mesh`）。
+
+     ```jsx
+     points.forEach((point) => {
+       const mesh = new THREE.Mesh(someGeometry, someMaterial);
+
+       // 将新网格的位置设置为二十面体的顶点位置
+       mesh.position.copy(point);
+
+       scene.add(mesh);
+     });
+     ```
+
+  5. **调整大小**: 新创建的网格可能很大，需要使用 `mesh.scale.setScalar(0.1)` 等方法将其缩小，以便能看到它们分布在球体表面。
+
+- **结果**: 我们成功地在球体表面上均匀地分布了一系列物体，解决了两极畸变的问题。这个新方法是基于 **几何（Geometry）** 的，而不是基于 **纹理（Texture）** 的。
+
+# 35-drawing-circles-onto-an-icosahedron
+
+- **目标：** 在二十面体的每个顶点上放置一个平面的圆形，而不是一个小球。
+- **实现步骤**
+  1. **创建圆形几何体 (`CircleGeometry`)**:
+     - 在循环外部创建一个可复用的 `CircleGeometry`。
+       ```jsx
+       const circleGeom = new THREE.CircleGeometry(1, 32); // 半径为1，32个分段
+       ```
+  2. **在循环中使用圆形几何体**:
+     - 在 `forEach` 循环中创建 `Mesh` 时，使用 `circleGeom`。
+- **对齐圆形平面**
+
+  - **问题**: 默认情况下，所有创建的圆形平面都朝向同一个方向（例如，朝向 Z 轴），它们并没有贴合球体的表面。
+  - **解决方案**: 使用 `mesh.lookAt()` 方法，让每个圆形平面都“朝向”球体的中心 `(0,0,0)`。这样，它们就会像贴在球体表面一样对齐。
+
+    ```jsx
+    points.forEach((point) => {
+      const mesh = new THREE.Mesh(circleGeom, someMaterial);
+      mesh.position.copy(point);
+
+      // 让 mesh 朝向场景中心
+      mesh.lookAt(new THREE.Vector3(0, 0, 0));
+
+      scene.add(mesh);
+    });
+    ```
+
+- **渲染问题：单面渲染**
+  - **现象**: 你可能看不到任何圆形，或者只能在特定角度看到它们的边缘。
+  - **原因**: 默认情况下，Three.js 只渲染几何体的**正面 (`FrontSide`)**。因为我们的圆形平面是朝向球心（向内）的，所以从外部看，我们看到的是它们的**背面**，而背面默认是不被渲染的。
+  - **解决方案**: 在圆形平面的材质中，设置 `side: THREE.BackSide` 或 `side: THREE.DoubleSide`。
+    ```jsx
+    const dotMaterial = new THREE.MeshBasicMaterial({
+      color: "tomato",
+      side: THREE.DoubleSide, // 渲染双面
+    });
+    ```
+- **添加随机性**
+  - 我们可以使用 `Math.random()` 或者 `canvas-sketch-util/random` 库来随机化每个圆形的大小 (`mesh.scale`)，使其效果更生动。
+  - **高斯随机 (`random.gaussian()`)**: 与 `Math.random()` 的均匀分布不同，高斯随机生成的数值更倾向于集中在平均值附近，产生的结果更“有机”。
+- **新方法的问题**
+  - 虽然这个几何方法解决了均匀分布的问题，但当圆形变得很大时，一个新的问题出现了：它们看起来像是**贴在球体上的扁平光盘**，而不是画在球体表面上的图案。它们没有跟随球体的曲面弯曲。
+  - 这促使我们去探索下一种，也是最终的解决方案：**完全在着色器中实现**。
+
+# 36-using-a-shader-as-a-texture
+
+- **最终方案：全着色器实现**
+  - **核心思想**: 不再通过创建大量几何体来模拟波点，而是将波点直接“绘制”在主球体的表面材质上。这就像用记号笔在球上画点一样，图案会完美地贴合曲面。
+- **数据传递：将顶点位置传入着色器**
+
+  1. **获取顶点**: 我们仍然使用 `IcosahedronGeometry` 来获取均匀分布的顶点位置数组 `points`。
+  2. **将数组作为 `uniform`**: 我们可以将整个 `points` 数组作为 `uniform` 传给着色器。
+
+     ```jsx
+     const material = new THREE.ShaderMaterial({
+       uniforms: {
+         points: { value: points },
+         // ...
+       },
+     });
+     ```
+
+  3. **在 GLSL 中接收数组**: 在片段着色器中，声明一个 `vec3` 数组来接收这些点。
+
+     ```glsl
+     uniform vec3 points[POINT_COUNT];
+
+     ```
+
+- **解决数组长度问题：使用 `defines`**
+  - **问题**: GLSL 要求在声明数组时必须指定一个**编译时常量**作为其长度。但我们的 `points.length` 是一个运行时变量。
+  - **解决方案**: 使用 `ShaderMaterial` 的 `defines` 属性。`defines` 允许我们在 JavaScript 中定义一些宏，这些宏会在 GLSL 代码编译之前被直接替换进去。
+    ```jsx
+    const material = new THREE.ShaderMaterial({
+      defines: {
+        // 定义一个名为 POINT_COUNT 的宏
+        POINT_COUNT: points.length,
+      },
+      // ... uniforms, etc.
+    });
+    ```
+  - 现在，GLSL 代码中的 `POINT_COUNT` 就会被自动替换为 `points` 数组的实际长度，解决了编译问题。
+- **在片段着色器中计算距离**
+
+  1. **获取当前像素的 3D 位置**:
+     - 我们需要知道当前正在着色的像素在 3D 空间中的实际位置。
+     - 这可以通过在**顶点着色器**中将 `position` 属性传递给一个 `varying vec3 vPosition`，然后在**片段着色器**中接收这个 `vPosition` 来实现。
+  2. **寻找最近点**:
+     - 在片段着色器的 `main` 函数中，初始化一个非常大的距离值 `dist`。
+     - 使用一个 `for` 循环遍历传入的 `points` 数组。
+     - 在循环中，计算当前像素位置 `vPosition` 到每个 `point` 的距离 `d`。
+     - 使用 `dist = min(dist, d);` 来不断更新 `dist`，使其始终保持为到目前为止所有点中的**最小距离**。
+  3. **创建遮罩**:
+
+     - 循环结束后，`dist` 就包含了当前像素到**最近**的那个波点中心的距离。
+     - 现在可以像之前一样，使用 `dist` 和 `step` 函数来创建一个圆形的遮罩。
+
+     ```glsl
+     float mask = step(0.1, dist); // 0.1 是圆的半径
+     mask = 1.0 - mask;
+
+     ```
+
+  4. **上色**: 使用 `mix` 函数和 `mask` 来混合背景色和波点色。
+
+- **结果**: 我们成功地创建出了一个完美的、图案均匀且贴合曲面的波点球。这个方法不再有几何重叠或极点扭曲的问题。
+
+# 37-rim-lighting
+
+- **扩展应用：创建多个球体**
+  - 将创建球体 `Mesh` 的代码放入一个 `for` 循环中，就可以轻松创建多个实例。
+  - **性能优化**:
+    - **复用几何体 (`Geometry`)**: 只创建一个 `IcosahedronGeometry`，并在循环中复用它来创建所有的 `Mesh`。创建多个几何体实例会消耗更多内存。
+    - **复用材质 (`Material`)**: 虽然也可以复用材质，但如果每个材质都使用相同的着色器，Three.js 在底层会自动进行优化。
+- **添加边缘光 (Rim Lighting)**
+
+  - 边缘光是一种**背光效果**，它能勾勒出物体的轮廓，增加立体感。
+  - 这是一种“伪光照”，完全在片段着色器中通过数学计算实现，不依赖于 Three.js 的光源系统。
+  - **实现**:
+
+    1. 课程仓库提供了一个可直接复制粘贴的 `rim` GLSL 函数片段。
+    2. 将这个函数粘贴到你的片段着色器 `main` 函数之外。
+    3. 在 `main` 函数中调用 `rim()` 函数，它会返回一个 `0.0` 到 `1.0` 之间的值，表示当前像素的边缘光强度。
+    4. 将这个强度值加到最终的颜色上，就可以实现边缘光效果。
+
+       ```glsl
+       // ...
+       float r = rim(0.8); // 0.8 是边缘光的宽度参数
+       finalColor += r * 0.1; // 将边缘光叠加到颜色上，乘以一个小数来减弱效果
+
+       ```
+
+- **性能考量与优化**
+  - **当前方法的瓶颈**: `for` 循环是片段着色器中的性能杀手。我们当前的实现中，**每个像素**都需要循环遍历**所有**波点中心，这在点数增多时会变得非常慢。
+  - **更高效的方法**:
+    1. **预计算**: 在 JavaScript 中，为几何体的 **每个面（或顶点）** 预先计算出离它最近的 3 个波点中心。
+    2. **传递数据**: 将这 3 个点的索引作为**自定义 `attribute`** 传递给顶点着色器。
+    3. **着色器优化**: 在片段着色器中，只需要检查这最近的 3 个点，而无需再遍历所有点。这大大减少了计算量。
+  - **将计算从片段着色器转移到顶点着色器**:
+    - 这是一个通用的优化策略。顶点着色器只在每个顶点上运行，而片段着色器在每个像素上运行。一个模型通常顶点数远少于像素数。
+    - 如果可能，将复杂的计算（如光照）在顶点着色器中完成，然后将结果通过 `varying` 变量传递给片段着色器。GPU 会自动对这些结果进行平滑插值，通常能以更低的成本获得相似的效果。
+- **渲染管线回顾**
+  - 数据从**几何体 (`attributes`)** -> **顶点着色器** -> **片段着色器 (`varyings`)**。
+  - 顶点着色器为每个顶点计算位置和其它要传递的数据。
+  - GPU 会在顶点之间进行**插值**，为每个像素生成一个 `varying` 值。
+  - 片段着色器使用插值后的 `varying` 值来计算最终颜色。
+  - 这个过程在所有现代图形库中都是基本相同的。
+
+# 38-antialiasing-with-glsl
+
+- **问题：锯齿 (Aliasing)**
+  - 使用 `step()` 函数创建的圆形边缘非常锐利，在屏幕上放大看会出现明显的“锯齿”或“阶梯状”边缘。这使得图形看起来不平滑，质量较低。
+- **解决方案：抗锯齿 (Anti-aliasing)**
+  - 我们需要一个更平滑的"step"函数，它能在边缘处产生一个柔和的过渡，而不是一个硬性的 0 或 1 跳变。
+  - **`glsl-aastep`**: 这是一个 NPM 上的 GLSL 模块，提供了抗锯齿的 `step` 函数功能。
+- **`aastep` 的实现与要求**
+  - **安装**: `npm install glsl-aastep`
+  - **导入**: 在 GLSL 中用 `glslify` 导入：`#pragma glslify: aastep = require('glsl-aastep')`
+  - **开启 WebGL 扩展**: `aastep` 的工作原理依赖于计算屏幕空间导数（derivatives），这需要开启一个名为 `OES_standard_derivatives` 的 WebGL 扩展。
+  - **在 Three.js 中开启扩展**: 在 `ShaderMaterial` 的属性中进行设置：
+    ```jsx
+    const material = new THREE.ShaderMaterial({
+      // ...
+      extensions: {
+        derivatives: true,
+      },
+    });
+    ```
+- **使用 `aastep`**
+  - 它的用法与 `step()` 完全相同，只是函数名不同。
+  - 将 `step(threshold, value)` 替换为 `aastep(threshold, value)`。
+- **结果**
+  - 使用了 `aastep` 后，圆形的边缘会变得非常平滑，大大提高了渲染质量。其内部原理是根据像素与边缘的距离，在边缘处产生一个宽度约为 1 像素的平滑灰色过渡带。
+
+# 39-exporting-animations-in-canvas-sketch
+
+- **目标：** 将`canvas-sketch`中的动画导出为 MP4 或 GIF 文件。
+- **创建无缝循环动画**
+
+  1. **设置 `duration`**: 在 `canvasSketch` 的设置中，添加 `duration` 属性（单位：秒）。这会使 `canvas-sketch` 提供的 `time` 变量在达到 `duration` 后重置为 0。
+
+     ```jsx
+     const settings = {
+       duration: 5, // 动画循环时长为 5 秒
+     };
+     ```
+
+  2. **使用 `playhead`**: `canvas-sketch` 提供了一个 `playhead` 变量，它是一个从 `0.0` 到 `1.0` 线性变化的值，代表当前在循环中的进度。
+  3. **计算角度**: 使用 `playhead` 来创建一个完整的 360 度旋转。
+
+     ```jsx
+     // 在 render 函数中
+     const angle = playhead * Math.PI * 2; // 0.0 -> 2π
+     mesh.rotation.y = angle;
+     ```
+
+  - 这样，当 `playhead` 从 `0.0` 变化到 `1.0` 时，物体正好旋转一整圈，动画结束时和开始时的状态完全一致，实现了无缝循环。
+
+- **导出为 MP4**
+
+  1. **安装 `ffmpeg`**: `canvas-sketch` 使用 `ffmpeg` 来编码视频。可以通过提供的命令行工具一键安装一个兼容版本：
+
+     ```bash
+     npx canvas-sketch-cli --install-ffmpeg
+
+     ```
+
+  2. **以流模式启动服务**: 使用 `-stream` 参数启动 `canvas-sketch`。
+
+     ```bash
+     canvas-sketch shader.js --stream
+
+     ```
+
+  3. **开始录制**: 在浏览器中打开页面，按下 `Cmd/Ctrl + Shift + S` 开始录制。`canvas-sketch-cli` 会在后台将每一帧实时编码成 MP4。
+  4. **完成**: 动画播放完一个循环后，录制会自动停止，一个 MP4 文件会出现在你的“下载”文件夹中。
+
+- **导出为 GIF**
+
+  - 过程与导出 MP4 几乎一样，只是在启动服务时指定格式：
+
+    ```bash
+    canvas-sketch shader.js --stream=gif
+
+    ```
+
+  - **GIF 优化建议**:
+    - GIF 文件通常比 MP4 大很多。为了控制文件大小，建议使用较低的分辨率（如 `512x512`）和较低的帧率（如 `24` 或 `30`）。
+
+- **格式选择**
+  - **Twitter**: GIF 效果好，循环播放，颜色保真。
+  - **Instagram**: 不支持直接上传 GIF，必须使用 MP4。MP4 是有损压缩，可能会有轻微的颜色损失。
+
+# 40-custom-attributes-demo
+
+- **目标：** 在顶点着色器中为每个顶点（或三角形）添加随机的位移。
+- **使用 `BufferGeometry` 添加自定义 `attribute`**
+
+  1. **使用 `BufferGeometry`**: 确保你使用的是 `IcosahedronBufferGeometry`，而不是 `IcosahedronGeometry`。`BufferGeometry` 允许我们直接操作底层的平面数组，从而可以方便地添加自定义 `attribute`。
+  2. **创建自定义 `attribute` 数据**: 创建一个新的 `Float32Array`，其长度应与顶点数相匹配。用随机数填充这个数组。
+
+     ```jsx
+     // 假设 geometry.attributes.position.count 是顶点数
+     const randomDirections = new Float32Array(count * 3); // 每个方向有x,y,z三个分量
+     for (let i = 0; i < count; i++) {
+       // ... 生成随机 x, y, z ...
+       randomDirections[i * 3 + 0] = x;
+       randomDirections[i * 3 + 1] = y;
+       randomDirections[i * 3 + 2] = z;
+     }
+     ```
+
+  3. **附加到几何体**: 将这个数组作为新的 `BufferAttribute` 添加到几何体上。
+
+     ```jsx
+     geometry.setAttribute(
+       "randomDirection",
+       new THREE.BufferAttribute(randomDirections, 3)
+     );
+     ```
+
+- **在顶点着色器中接收和使用 `attribute`**
+
+  1. **声明 `attribute`**: 在顶点着色器中，使用 `attribute` 关键字声明一个与 JavaScript 中同名、同类型的变量。
+
+     ```glsl
+     attribute vec3 randomDirection;
+     attribute float randomStrength;
+
+     ```
+
+  2. **应用位移**: 在计算 `gl_Position` 之前，将原始的 `position` 加上这个随机方向和强度。
+
+     ```glsl
+     vec3 displacedPosition = position + randomDirection * randomStrength;
+     // ... 使用 displacedPosition 进行后续的矩阵变换 ...
+
+     ```
+
+- **结果**: 每个顶点都会沿着一个随机的方向被推出一个随机的距离，从而创建出一种爆炸或不规则的几何形态。这是 `BufferGeometry` 和自定义 `attribute` 的一个强大应用。
+
+# 41-q-a
+
+- **问：如何将点光源 (`PointLight`) 应用到自定义 `ShaderMaterial`?**
+  - **答：** 这很复杂。Three.js 的内置材质（如 `MeshPhongMaterial`、`MeshStandardMaterial`）本身就是非常庞大和复杂的预构建着色器，它们已经包含了处理各种光源（点光源、平行光等）的逻辑。当你使用 `ShaderMaterial` 时，你是在从零开始编写着色器，默认情况下它不包含任何光照计算。要实现点光源效果，你需要自己编写光照模型的 GLSL 代码（例如，手动实现 Phong 或 Blinn-Phong 光照模型），并将光源的位置、颜色等信息作为 `uniforms` 传递进来。一个更高级但复杂的做法是，尝试修改 Three.js 内置着色器的源码，但这需要深入理解其着色器块（Shader Chunks）系统。
+- **结论：一个 `Material` 就是一个预构建的 `Shader`。**
+  - 正确。`MeshBasicMaterial` 是最简单的着色器，`MeshStandardMaterial` 则是一个非常复杂的、实现了物理 기반 渲染 (PBR) 的着色器。
+- **问：隐藏物体一部分的最佳方法是什么？**
+  - **答：** 方法很多，取决于具体需求。
+  - **方法 1：片段着色器中的 `discard`**
+    - 在片段着色器中，根据某些条件（例如，在一个圆形遮罩内部），使用 `discard` 关键字。`discard` 会直接丢弃当前片段，使其不被渲染，从而产生一个透明的“洞”。
+    - **优点**：实现简单灵活。
+    - **缺点**：`discard` 产生的边缘是硬的，有严重的锯齿，并且可能会影响 GPU 的一些深度测试优化。
+  - **方法 2：使用半透明**
+    - 在片段着色器中，将需要隐藏部分的 `gl_FragColor` 的 `alpha` 值设为 `0.0`，并确保材质的 `transparent` 属性为 `true`。
+    - **优点**：可以实现平滑的淡出效果，抗锯齿效果更好。
+    - **缺点**：透明物体的渲染顺序和深度写入可能会产生一些问题。
+  - **方法 3：构造实体几何 (CSG - Constructive Solid Geometry)**
+    - 使用专门的库（如 `three-csg-ts`）对两个几何体进行布尔运算（交、并、差）。例如，用一个大球体减去许多小球体或圆柱体，来“挖”出洞。
+    - **优点**：产生真实的几何空洞，边缘可以做到完美抗锯齿。
+    - **缺点**：会生成大量新的、可能很复杂的三角形，增加模型的顶点数，可能会影响性能。
+
+# 42-wrapping-up
+
+- **将 WebGL 应用部署到移动端 (iOS/Android)**
+  - **背景**: 有时我们需要利用原生设备的功能（如 ARKit、摄像头），或者希望将 WebGL 应用打包成一个独立 App。
+  - **方法**: 使用**Web View**框架。这些框架允许你在一个原生的 App 壳中嵌入一个网页。
+  - **推荐框架**:
+    - **Ionic**: 一个成熟的框架，允许你用 HTML/CSS/JavaScript 构建跨平台的移动应用。它使用标准的 Web View。
+    - **Ejecta**: 一个专门为 Canvas 和 WebGL 设计的、轻量级的 iOS 容器。它的特点是**性能极高**，因为它将 WebGL 调用直接桥接到原生的 OpenGL 调用，绕过了浏览器的许多开销。
+      - **优点**: 性能接近原生。
+      - **缺点**: 不支持 DOM 和 CSS，只专注于 Canvas/WebGL 渲染。
+- **结语**: 感谢参与！
