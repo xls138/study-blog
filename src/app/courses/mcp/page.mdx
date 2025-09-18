@@ -1,0 +1,1036 @@
+import { CourseLayout } from "@/components/CourseLayout";
+
+export const course = {
+  title: "Complete Intro to MCP",
+  imageUrl: "/courses/mcp.webp",
+  date: "2025-09-05",
+  author: {
+    name: "Brian Holt",
+    imageUrl: "/authors/BrianHolt.webp",
+  },
+  description:
+    "深入了解模型上下文协议（Model Context Protocol，MCP），并从零开始编写一个MCP服务器！构建更强大的MCP服务，这些服务可以利用外部API并与自定义应用程序进行交互。在Claude Desktop和Claude Code中安装MCP工具，以扩展大型语言模型（LLMs）的功能。学习提示和启发的设计模式。比较远程与本地实现策略，以及安全最佳实践，确保人工智能代理的安全部署。",
+};
+
+export const metadata = {
+  title: course.title,
+};
+
+export default (props) => <CourseLayout course={course} {...props} />;
+
+# 0-introduction
+
+### 讲师与课程背景
+
+- **讲师**: Brian Holt
+- **当前职位**: Databricks (通过收购 Neon 加入)
+- **职业背景**: 长期从事 AI 和机器学习相关工作，主要客户是大型 AI 代理（Agent）制造商，如 Replit, Vercel 等。
+- **课程主题**: MCP (Model Context Protocol / 模型上下文协议)
+- **课程网站**: `MCP.holt.courses`，所有课程笔记均开源共享。
+
+### 什么是 MCP？
+
+- **定义**: 一种向 AI 及 AI 代理暴露工具和能力的方式。
+- **起源**: 由 Anthropic (Claude 的开发公司) 在 2024 年中期发布，并迅速被广泛采用。
+- **与其它技术的对比**:
+  - GitHub 的 Participants 协议
+  - OpenAI 的 GPTs
+  - MCP 因其简洁高效而脱颖而出。
+- **核心理念**: MCP 服务器的构建相对简单。本课程将构建 5-6 个不同的 MCP 服务器，它们之间大多只是微小的修改。
+
+### AI 的重要性
+
+- Brian 认为 AI 并非一时风尚，而是一项重要的技术变革。
+- 对于科技行业的从业者（设计师、工程师、产品经理等），学习如何正确使用和构建 AI 应用至关重要。
+
+### 课程受众
+
+- **AI 经验**: 无需任何 AI 先验知识。
+- **编程经验**: 课程使用 JavaScript 和 Node.js。有编程经验更佳，但并非必需。
+
+### 工具和环境设置
+
+- **Node.js**: 建议使用 18 以上版本（讲师使用 22.18）。
+  - 推荐使用版本管理器，如 `nvm` 或 `fnm` (Fast Node Manager)。
+- **编辑器**:
+  - **VS Code**: 讲师主力编辑器。
+  - **Cursor**: 基于 VS Code 的 AI 辅助编辑器，也经常使用。
+- **终端与字体**:
+  - **终端**: Ghostty
+  - **Shell**: zsh (macOS 默认)
+  - **主题与提示符**: Dracula 主题, Starship 提示符
+  - **字体**: MonaLisa (付费，提供折扣码), Cascadia Code (微软开源免费替代品)
+  - **配置**: 开启连字 (ligatures) 功能。
+- **代码库 (Repo)**:
+  - 课程提供两个代码库：一个用于 MCP 服务器的应用示例，另一个是课程网站本身。
+  - 鼓励通过提交 Issue 来提问，而非私信。
+  - **需要克隆**: `mcp-issue-tracker` 这个仓库，并为其点赞 (Star)。
+
+### 如何利用 AI 学习本课程
+
+- **鼓励使用 AI 工具**: 推荐使用 Claude 或 ChatGPT 来辅助学习和提问。
+- **提供上下文**: 课程提供了一个包含所有笔记的超长 txt 文件，方便用户将其喂给 LLM 作为上下文，从而获得更精准的回答。
+- **处理时效性问题**:
+  - MCP 协议发展迅速，LLM 内置的知识可能已过时。
+  - 在提问关于 MCP 的问题时，强烈建议将官方最新的文档（同样提供长文本文件）一并作为上下文提供给 LLM，以确保获得准确的信息。
+
+# 1-ai-agents-overview
+
+### Brian 对 AI 的看法
+
+- **AI 不是一时的风潮**
+  - 相比于 JavaScript 框架之争或区块链等技术浪潮，AI 的影响更为深远和持久。
+- **对软件开发的影响**
+  - 软件开发的岗位不会在一夜之间消失。
+  - **核心观点**: 能够拥抱和利用 AI 技术的开发者，将比仅凭经验和手写代码的开发者更具生产力和竞争力。
+  - 案例：Databricks 的工程师使用 Cursor（AI 编程助手）以惊人的速度产出高质量代码。关键在于掌握好自己写代码、写提示词（Prompts）、审查 AI 生成内容之间的平衡。
+- **AI 的未来发展**
+  - 简单的通过增加训练数据和算力来提升模型能力的方式已接近瓶颈（互联网上的高质量、非 AI 生成的数据已基本被“学习”完毕）。
+  - 未来的进步将更多来自于**新的技术和创新的使用方法**，例如更高效地使用 Token、发展新的模型架构等。
+
+### 核心原则：责任归属
+
+- **极其重要**: 无论代码是你自己写的还是 AI 代理生成的，**你都必须为最终交付的代码负全部责任**。
+- “这是我的 AI 代理写的，不关我事”这种想法是完全不可接受的。
+- 所有代码，特别是核心重要代码，都必须经过仔细审查。
+
+### "代理" (Agent) 和 "代理性" (Agentic) 的含义
+
+- **术语现状**:
+  - 这两个词是当前最热门的营销术语，定义模糊。
+  - Brian 承认自己在课程中也可能将“代理”和“LLM”混用，因为市场营销已经让这种用法深入人心。
+- **“代理”的严格定义**:
+  - 一个**自主的、由多个 LLM 组成的网络框架**。
+  - 工作流程：你给出一个任务，代理会将其分解，并分配给具有不同“角色”或“专长”的多个 LLM（可以想象成多个“微型大脑”）协同完成。
+- **实例解析：Replit（一个编码代理）**
+  - 当收到“生成一个多用户的待办事项应用”的任务时：
+    1. **产品经理 LLM** 进行任务规划。
+    2. **设计师 LLM** 制作应用模型。
+    3. **工程师 LLM** 编写代码。
+    4. **评审员 LLM** 判断结果是否符合用户要求。
+    5. **DevOps LLM** 辅助部署和数据库管理。
+  - 这种由多个 специализирован 的 LLM 协作构成的系统，才是“代理”的核心理念。
+- **营销的滥用**: 由于“代理性”这个词很火，现在几乎任何应用了 AI 技术的东西都会被市场宣传为具有“代理性”。
+
+### 代理工具示例
+
+- **应用构建代理**:
+  - Appbuild (Brian 参与过的开源参考架构)
+  - Replit
+  - v0
+  - Create
+  - Same.new
+  - Databutton
+- **IDE 中的编码代理**:
+  - Cursor
+  - VS Code 的代理模式
+  - 这些工具的核心是拥有一个“迭代循环”的 LLM。
+
+# 2-setup-mcp-clients
+
+### 核心概念区分：客户端 vs. 服务器
+
+- **MCP 客户端 (Client)**：使用或消费 MCP 服务器提供的功能。
+  - 示例：Claude Desktop, Tome, VS Code。
+- **MCP 服务器 (Server)**：通过 MCP 协议提供工具和能力。
+  - 这是我们课程中要亲手构建的部分。
+
+### 课程主要使用的客户端
+
+- **首选：Claude Desktop**
+  - 原因：网页版的 Claude 无法使用我们将在本地运行的 MCP 服务器，而桌面版可以。
+  - 准备：需要一个 Claude 账号，其免费额度足以完成本课程。
+- **开源替代方案：Tome**
+  - 界面与 Claude Desktop 非常相似。
+  - **核心优势**：可以通过 **Ollama** 在本地运行模型。
+  - 支持多种模型来源：Ollama 本地模型、OpenAI (ChatGPT)、Google (Gemini)。
+  - **重要限制**：目前只支持 MCP 的 `tools`（工具）功能，不支持 `prompts`（提示）和 `resources`（资源）。对于本课程来说影响不大，因为 `tools` 是最重要的部分。
+
+### 通过 Ollama 配置本地模型
+
+- **Ollama 是什么**：一个用于在本地托管和管理大语言模型的工具。
+- **安装与使用**：
+  - 安装非常简单，例如 `brew install ollama`。
+  - `ollama pull <模型名称>`：下载一个新模型。
+  - `ollama list`：查看已安装的模型列表。
+- **硬件要求**：
+  - **非常重要**：需要注意电脑的内存（RAM），特别是 GPU 的显存（VRAM）。在普通笔记本上运行大型模型会非常慢甚至无法运行。
+  - **游戏电脑**：是运行 Ollama 的绝佳选择，因为它们通常有强大的 GPU。但要注意高耗电量。
+
+### 本地模型推荐
+
+- **关键前提**：模型必须支持**工具调用 (tool calling)** 功能。
+- **型号推荐 (可能会过时)**：
+  - 性能较弱的电脑：`Qwen:0.6B` (注意：模型较小，回答可能有些奇怪)。
+  - 性能较好的电脑：`Qwen:1.8B`。
+- **理解模型参数**：
+  - `0.6B`、`1.8B` 指的是数十亿参数。这只是对模型能力的一个**粗略**衡量。
+  - 比较参数量**只在同一模型家族内有意义**（如 Qwen 0.6B vs Qwen 1.8B）。跨家族比较参数量（如 Qwen vs Phi）没有意义。
+
+### 其他有用的客户端和工具
+
+- **Open Router**：一个聚合服务，可以让你方便地在多种不同的模型（开源和闭源）之间快速切换和测试。
+- **IDE 中的编码代理**：
+  - Cursor, Windsurf, VS Code (agent mode), Claude Code。
+  - **课程作业**：建议大家至少都去试用一下 Cursor, VS Code Agent mode, 和 Claude Code，找到最适合自己的工具。
+  - 这些编码工具是 MCP 大放异彩的地方，未来它们可以连接到数据库 MCP 服务器、GitHub MCP 服务器等，实现强大的功能。
+
+# 3-install-project-dependencies
+
+### MCP 服务器的核心理念
+
+- **比想象中简单**：构建 MCP 服务器看似复杂，但实际上概念非常直接，类似于初次接触容器技术。其本质上是一个相对“笨拙”但功能明确的服务器。
+
+### MCP 服务器的三种实现方式
+
+1. **标准输入/输出 (Standard I/O / Stdio)**
+   - "传统"但依然至关重要的方式。
+   - 用于需要访问本地计算机的操作，例如创建或删除文件。这种本地执行的能力是不可替代的。
+   - 工作原理：通过进程的标准输入(stdin)传递消息，从标准输出(stdout)获取结果。
+2. **服务器发送事件 (SSE / Server-Sent Events)**
+   - 于 2024 年 11 月引入，但在 2025 年 3 月被弃用，生命周期很短。
+   - 本课程**不会**构建此类型服务器。
+3. **可流式 HTTP (Streamable HTTP)**
+   - 用于**远程**MCP 服务器的现代方式。例如，远程调用 Neon 提供的 MCP 服务。
+   - 本课程后续会构建此类型服务器。
+
+### 项目初始化步骤
+
+1. **创建项目目录**
+   - 在你的工作区创建一个新文件夹，例如 `my-mcp`。
+   - `mkdir my-mcp && cd my-mcp`
+2. **初始化 Node.js 项目**
+   - `npm init -y`
+   - 这会生成一个基础的 `package.json` 文件。
+3. **安装依赖**
+   - **MCP SDK**:
+     - `npm install @modelcontextprotocol/sdk@1.16`
+     - **注意**：锁定版本号`1.16`非常重要，因为 API 未来可能会发生变化，导致课程代码失效。
+     - 该 SDK 包的结构对 Node.js 不太友好，导入时需要写明具体的文件路径。
+   - **Zod**:
+     - `npm install zod`
+     - **Zod 是什么**：一个用于定义数据结构和验证数据的库。
+     - **用途**: 在 MCP 中，它被用来精确定义工具的输入参数类型（例如，必须是数字、字符串等），是 MCP SDK 的硬性依赖。
+
+### 配置文件 `package.json`
+
+- 由于我们的 JavaScript 代码将使用 ESM 的 `import` 语法，需要在 `package.json` 文件中添加以下行：
+
+  ```json
+  "type": "module"
+
+  ```
+
+### 创建服务器文件
+
+- 在项目根目录下创建一个新文件，命名为 `mcp.js`。
+- **设置必要的导入**:
+  ```jsx
+  import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+  import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+  import { z } from "zod";
+  ```
+
+# 4-register-your-first-tool
+
+### 步骤 1：创建服务器实例
+
+- 在 `mcp.js` 文件中，实例化 `McpServer`。
+  ```jsx
+  const server = new McpServer({
+    name: "add-server",
+    version: "1.0.0",
+  });
+  ```
+- **`name` 和 `version` 的作用**:
+  - `name`: 服务器的唯一标识。
+  - `version`: 版本号。当版本发生变化时，客户端（如 Claude）会知道需要清除缓存，重新获取工具的最新定义。
+
+### 步骤 2：注册一个工具
+
+- 使用 `server.registerTool()` 方法来定义一个工具。
+- **基本结构**:
+  ```jsx
+  server.registerTool(
+    "add",
+    {
+      title: "addition tool",
+      description: "add two numbers together",
+      inputSchema: {
+        a: z.number(),
+        b: z.number(),
+      },
+    },
+    async ({ a, b }) => {
+      const result = a + b;
+      return {
+        content: [
+          {
+            type: "text",
+            text: String(result),
+          },
+        ],
+      };
+    }
+  );
+  ```
+- **各部分详解**:
+  - **`'add'`**: 工具的内部名称，用于程序调用。
+  - **`title`**: 人类可读的标题。
+  - **`description`**: **至关重要**。这是 LLM 判断“在何种情况下应该使用此工具”的主要依据。描述必须清晰、准确、简洁。
+  - **`inputSchema`**: 使用 Zod 定义工具期望的输入参数。这相当于工具的“API 契约”，确保了传入数据的类型和结构是正确的。
+  - **`handler`**: 工具的具体实现逻辑。
+    - 这是一个 `async` 函数。
+    - 它接收经过`inputSchema`验证后的参数对象（例如 `{ a, b }`）。
+    - 必须返回一个包含 `contentType` 和 `content` 的对象，将结果传递回 LLM。
+
+### MCP 的强大之处：确定性与安全性
+
+- **问题**: LLM 本质上是**非确定性**的。它们可能会“创造性地”解决问题，从而导致意想不到的灾难性后果。
+  - **案例**: 指示一个 LLM 向数据库中插入数据，它可能会因为觉得新数据“不合适”而先执行 `DROP DATABASE`（删除整个数据库）的操作。
+- **MCP 的解决方案**:
+  - 通过定义具体的、功能有限的工具，我们可以将 LLM 的行为约束在安全和可预测的范围内。
+  - 你可以提供一个 `addToDatabase` 工具和一个 `migrateDatabase` 工具，但**不提供** `dropDatabase` 工具。这样，LLM 就无法执行危险操作。
+
+### 如何编写优秀的工具描述
+
+- **原则**: “足够”即可，不多也不少。
+- **要点**:
+  - **清晰简洁**: 用简单的语言描述工具的功能。
+  - **避免冗余**: 不要添加不必要的信息。LLM 可能会过度解读某些词语（例如，将“数字”描述为“实数”），导致其行为偏离预期。
+  - **长度适中**: 通常几句话就足够了。目标是让 LLM 准确理解工具的用途，而不是给它一篇说明文。
+- **参考范例**: Neon 的 MCP 服务器代码库是学习如何编写优秀工具描述的好例子。
+
+# 5-call-the-mcp-with-json-rpc
+
+## 运行并调用 MCP 服务器
+
+### 步骤 3：连接传输层并启动服务器
+
+- 在 `mcp.js` 文件末尾添加以下代码，完成服务器的启动逻辑。
+
+  ```jsx
+  // 1. 创建一个标准I/O传输实例
+  const transport = new StdioServerTransport();
+
+  // 2. 将服务器连接到传输层，开始监听
+  await server.connect(transport);
+  ```
+
+- **Transport (传输层)**: 定义了服务器如何接收和发送消息。在这里，`StdioServerTransport` 意味着通过进程的标准输入/输出进行通信。
+
+### 运行服务器
+
+- 在终端中执行以下命令：
+
+  ```bash
+  node mcp.js
+
+  ```
+
+- **预期现象**: 程序会启动并“挂起”（光标停住不动）。这是正常现象，表示服务器正在运行，并等待从其标准输入 (`stdin`) 接收指令。
+
+### 手动与服务器通信
+
+- **通信协议**: MCP 底层使用 **JSON-RPC 2.0** 协议。
+- **方法**: 我们可以通过 Linux/macOS 的管道符 (`|`) 将一个包含 JSON-RPC 消息的字符串，通过 `echo` 命令发送到服务器进程的 `stdin`。
+
+  ```bash
+  echo '<JSON-RPC负载>' | node mcp.js
+
+  ```
+
+### 什么是 JSON-RPC?
+
+- **RPC**: Remote Procedure Call（远程过程调用）的缩写。它是一种允许程序调用另一台计算机上某个函数的协议。
+- **与 REST 的对比**:
+  - **REST**: 围绕“资源”(Resource)设计，如 GET/POST/PATCH 一个用户资源。
+  - **RPC**: 围绕“动作”(Action)设计，如调用一个`calculateSum`函数并传入参数。
+- **历史**: JSON-RPC 2.0 规范自 2009 年就已存在，是一个成熟、非 AI 专属的技术，常用于基础设施和 DevOps 领域。
+
+### 关键 RPC 方法示例
+
+1. **`tools.list`**: 查询服务器提供了哪些工具。
+
+   - 这是客户端与服务器交互的第一步，用于发现其能力。
+   - **命令**:
+
+     ```bash
+     echo '{"jsonrpc":"2.0","id":1,"method":"tools.list"}' | node mcp.js
+
+     ```
+
+   - **`jq`工具**: 可以使用 `jq` (一个命令行 JSON 美化工具) 来格式化输出，方便阅读。
+
+     ```bash
+     ... | node mcp.js | jq
+
+     ```
+
+   - 服务器会返回一个 JSON 对象，详细描述它拥有的所有工具（名称、标题、描述、输入模式等）。
+
+2. **`tools.call`**: 执行一个具体的工具。
+
+   - **命令** (调用`add`工具，参数 a=2, b=3):
+
+     ```bash
+     echo '{"jsonrpc":"2.0","id":1,"method":"tools.call","params":{"name":"add","arguments":{"a":2,"b":3}}}' | node mcp.js
+
+     ```
+
+   - 服务器会执行对应的`handler`函数，并返回结果。
+   - **响应**: `{"jsonrpc":"2.0","id":1,"result":{"contentType":"text/plain","content":"5"}}`
+
+3. **`initialize`**: 初始化握手。
+   - 这是客户端连接服务器时发送的第一个请求。
+   - 用于交换协议版本信息、客户端缓存状态等，服务器会告知客户端哪些信息需要更新。
+   - 握手成功后，客户端会接着调用 `tools.list`, `prompts.list` 等来获取完整的服务能力信息。
+
+### 课程后续展望
+
+- 本节课构建的服务器是后续所有工作的基础。
+- 未来的课程将在该模板上进行扩展，注册更多、更复杂的工具。
+- 从现在开始，可以放心复制粘贴这些服务器的“样板代码”，将重点放在理解和设计不同工具的语义上。
+- **高级技巧**: Brian 提到他自己经常使用 AI 编程工具（如 Claude Code）来为自己生成和编写 MCP 服务器。
+
+# 6-add-mcp-server-to-claude-desktop
+
+### 为 Claude 桌面版配置 MCP 服务器
+
+这是一个有些繁琐的过程，但遵循以下步骤即可完成。
+
+1. **打开设置**
+   - 启动 Claude 桌面应用。
+   - 点击设置图标，进入 `Developer` (开发者) 选项。
+2. **编辑配置文件**
+   - 点击 `Edit Config` (编辑配置) 按钮。这会打开一个 JSON 格式的配置文件。
+   - 在该文件中，我们将定义如何启动我们的本地 MCP 服务器。
+3. **添加服务器定义**
+   - 在 JSON 文件中，按照以下格式添加一个新的服务器条目：
+     ```json
+     {
+       "mcpServers": {
+         "demo-server": {
+           "command": "/usr/local/bin/node",
+           "args": ["/Users/xiaolisheng/Desktop/my-mcp/mcp.js"],
+           "env": {
+             "NODE_OPTIONS": "--no-deprecation"
+           }
+         }
+       }
+     }
+     ```
+
+- **详解各字段**:
+  - **`demo-server`**: 你为服务器指定的任意名称。
+  - **`command`**: **Node.js 可执行文件的完整绝对路径**。
+    - 在你的终端中运行 `which node` 来获取这个路径。
+  - **`args`**: 一个数组，包含要传递给 `command` 的参数。这里是**你的 `mcp.js` 脚本的完整绝对路径**。
+    - 在你的项目目录中运行 `pwd` 来获取当前目录的路径，然后在其后追加你的脚本文件名 (例如 `/mcp.js`)。
+  - **`env`**: 环境变量（可选但推荐）。
+    - **`NODE_NO_DEPRECATION: "--no-deprecation"`**: **强烈建议添加**。这会禁止 Node.js 在标准输出中打印弃用警告。如果没有这个设置，这些警告会被发送给 AI 代理，可能导致其困惑或出错。
+
+### 激活、测试与调试
+
+1. **重启 Claude**
+   - **重要**: 每次修改 MCP 服务器的配置文件或代码后，**必须完全退出并重启 Claude 桌面应用**，更改才会生效。
+2. **验证服务器加载**
+   - 重启后，在新的聊天窗口中，点击底部的“Tools”（工具）按钮。你应该能看到你刚刚添加的服务器（例如 `demo-server`）以及它提供的工具（例如 `add`）。
+3. **调试**
+   - 如果服务器启动失败，Claude 会提示错误。
+   - 前往 `Settings` -> `Developer`，点击 `Open Logs folder` (打开日志文件夹)。
+   - 在日志文件中查找与你服务器名称对应的日志，文件底部通常会显示详细的错误信息。
+
+### 为 Tome 配置 MCP 服务器
+
+- **Tome 的配置更简单**，直接在 UI 中进行。
+- 只需提供 `node` 命令和 `mcp.js` 的路径即可。
+- **优点**: 在 Tome 中修改或添加服务器**不需要重启应用**。
+
+### 发送请求测试
+
+- **向 Claude 提问**:
+
+  ```
+  我需要把两个数加起来。请使用 add server 这个MCP服务器，帮我计算2和7的和。
+
+  ```
+
+- **向 Tome 提问** (使用本地模型，如 Qwen 0.6B):
+  - 确保在 UI 中启用了你的 `add-server`。
+  - 发送同样的请求。
+- **预期结果**: 客户端（Claude 或 Tome）会弹窗确认是否使用该工具。确认后，它会显示发送到你本地服务器的请求内容和服务器返回的响应内容，并最终给出答案 "9"。
+
+### Q&A
+
+- **问：MCP 服务器可以用其他语言（如 Go）编写吗？**
+  - **答**：**可以**。MCP 基于标准 I/O 协议，是语言无关的。虽然 JavaScript 和 Python 有最好的官方 SDK，但任何语言都可以实现。Python 的 `fast-mcp` 是一个非常优秀的框架，推荐在生产环境中使用。
+- **问：考虑到重启的麻烦，最佳的开发体验是怎样的？**
+  - **答**：最快的迭代循环是使用像 Claude Code 这样的 AI 编程助手。你可以让它编写代码，当出现问题时，将日志文件提供给它，让它快速定位并修复错误。
+- **问：MCP 的响应格式有多严格？**
+  - **答**：**协议层面非常严格**。像 `contentType: 'text/plain'` 这样的字段名必须完全正确，因为这是由客户端程序（而非 LLM）解析的。如果字段名写错（例如 `test` 而不是 `text`），客户端将无法解析并报错。而像工具描述中的小错误，LLM 自身可能有一定的容错能力。
+
+# 7-mcp-weather-api
+
+### 项目背景与目标
+
+- 我们将构建一个比简单的加法器更实用的 MCP 服务器，它将赋予 LLM 获取实时天气信息的能力。
+- LLM 的训练数据是静态的，它本身无法知道“今天”的天气。通过 MCP 工具，我们可以弥补这一不足。
+
+### 使用的 API：Open-Meteo
+
+- 一个免费、无需注册即可使用的天气数据 API。
+- 如果此 API 将来失效，可以从公开的 API 列表（[Public APIs Repo](https://github.com/public-apis/public-apis)）中寻找替代品。
+
+### 构建步骤
+
+1. **安装依赖**
+
+   - 我们需要 `open-meteo` 的官方 SDK 来简化 API 调用。
+   - 在你的项目目录中运行：
+
+     ```bash
+     npm install open-meteo
+
+     ```
+
+2. **创建服务器文件 (`weather.js`)**
+   - 创建一个新文件 `weather.js`。
+   - 其基本结构与之前的 `mcp.js` 非常相似（引入`McpServer`, `StdioServerTransport`, `zod`等）。
+3. **注册天气工具**
+   - 核心代码是 `server.registerTool()` 部分。
+     ```jsx
+     server.registerTool("get-weather", {
+       title: "Get Current Weather",
+       description:
+         "Gets the current weather for a given latitude and longitude.",
+       inputSchema: z.object({
+         latitude: z.number(),
+         longitude: z.number(),
+       }),
+       // ... handler implementation
+     });
+     ```
+
+- **关键点**:
+  - **工具名称**: `get-weather`。
+  - **输入 (`inputSchema`)**: 定义为接收 `latitude` (纬度) 和 `longitude` (经度) 两个数字。
+  - **LLM 的智能之处**: 你不需要自己实现地理编码（将城市名转换为经纬度）。当你向 LLM 提问“明尼阿波利斯的天气如何？”时，LLM 会**自动查询**到明尼阿波利斯的经纬度，并将其作为参数传递给你的工具。
+
+1. **实现 `handler` 函数**
+   - 在 `handler` 函数内部，调用 `open-meteo` SDK。
+   - 传入从 LLM 接收到的经纬度参数。
+   - 设置所需的单位（如华氏度 `fahrenheit`，英里/小时 `mph` 等）。
+   - 获取 API 返回的天气数据。
+   - 将数据格式化后，作为 `content` 返回给 LLM。
+
+### 集成与测试
+
+1. **添加到 Claude 桌面版**
+   - 仿照之前的步骤，在 Claude 的配置文件中新增一个条目，例如 `weather-server`。
+   - 将 `command` 指向 `node`，并将 `args` 指向新的 `weather.js` 文件。
+2. **重启并测试**
+
+   - **完全重启** Claude 桌面应用。
+   - 新建一个聊天，并提出一个与天气相关的问题，例如：
+
+     ```
+     我今天在明尼苏达州明尼阿波利斯需要带雨衣吗？
+
+     ```
+
+- **预期流程**:
+  1. Claude 的 LLM 理解到这是一个关于实时天气的问题。
+  2. 它发现自己有一个名为 `Get Current Weather` 的工具可以解决这个问题。
+  3. 它将“明尼阿波利斯”转换为具体的经纬度坐标。
+  4. 它调用你的本地 `weather.js` MCP 服务器，并传入经纬度。
+  5. 你的服务器调用 Open-Meteo API，获取天气数据并返回。
+  6. LLM 收到包含降雨量等信息的数据，并根据这些数据生成一个自然的回答，告诉你是否需要雨衣。
+
+通过这个例子，我们成功地为 LLM 扩展了一项它原本不具备的、与现实世界实时交互的能力。
+
+# 8-mcp-tools-q-a
+
+### 问题 1：Claude 是如何知道应该使用天气 MCP 服务器的？
+
+- **回答**：这是一个分步过程：
+  1. **启动与发现**: Claude 桌面应用启动时，会运行其配置文件中定义的所有 MCP 服务器。
+  2. **获取工具箱**: Claude 会向每个运行中的服务器发送一个 `tools.list` 请求，获取该服务器提供的所有工具及其详细描述。这就像是为 LLM 准备了一个“工具箱”。
+  3. **意图分析**: 当用户提出问题时（例如“今天天气如何？”），LLM 会分析用户的意图。
+  4. **工具匹配**: LLM 会检查自己的“工具箱”，寻找描述与用户意图相匹配的工具。它会看到一个描述为“获取本地天气”的工具，并认为这是解决问题的最佳方式。
+  5. **优先选择**: LLM 被设计为**强烈倾向于使用其可用的工具**，而不是依赖其他方法（如网络搜索），因为工具提供了更结构化和可靠的数据。
+  6. **随机性因素 (Temperature)**: LLM 的“温度(temperature)”参数会引入一定程度的随机性。在极少数情况下，即使有合适的工具，它也可能选择不使用。但通常它会优先选择工具。
+
+### 问题 2：如果我有两个功能类似的天气工具，LLM 会如何处理这种冲突？
+
+- **回答**：**它会处理得很糟糕**，结果通常不理想。
+  - **核心原则**: **向 LLM 暴露的工具应该尽可能少，且功能明确不重叠**。
+  - **问题所在**:
+    1. **混淆**: 多个相似的工具会让 LLM 感到困惑，不知道该选择哪一个。
+    2. **浪费 Token**: 每次与 LLM 交互时，所有已启用的工具的定义都会被作为上下文发送给它。这会消耗宝贵的上下文窗口和计算资源（Token）。
+  - **最佳实践**:
+    - 如果某个工具在当前任务中不需要，请在 Claude 的 UI 界面中**手动禁用它**。
+    - **实际限制**: 目前，当暴露给 Claude 的工具数量超过大约**40 个**时，其性能会开始变得不稳定。
+
+### 问题 3：我能否通过系统提示 (System Prompt) 来指示 LLM 在特定场景下使用哪个工具？
+
+- **回答**：**完全可以，而且这是非常常用且强大的技术**。
+  - **直接指令**: 你可以直接在提示中告诉它使用哪个工具，例如：“请使用`add-server`来计算 2 和 7 的和”。
+  - **行为引导**: 你可以设置规则来引导它的行为。
+    - 示例 1：“请使用`Context7`（一个文档查询工具），以确保你拥有关于此库的最新文档。”
+    - 示例 2：“**不要**自己编写数据库迁移脚本。请**必须**使用`Drizzle`工具。”
+  - **重要性**: 通过精确的提示工程，你可以有效地“编程”或“驾驭”AI 代理的行为，让它按照你的预期使用 MCP 工具。
+
+### 问题 4：如果一个工具（如文档查询）会拉取大量信息，这会消耗上下文窗口和费用吗？
+
+- **回答**: **是的，100%会。**
+  - 工具返回的所有内容都会被注入到 LLM 的上下文中，这直接关系到 API 调用的成本和上下文窗口的占用。
+  - **实用建议**:
+    - 对于**个人开发者**，这种消耗通常在可接受范围内，不必过度担心或过早优化。
+    - 对于**大规模的企业级应用**，Token 消耗和成本控制则是一个需要重点考虑和优化的关键问题。
+
+# 9-mcp-resources-overview
+
+### 核心概念：工具 (Tools) vs. 资源 (Resources)
+
+这是一个理解资源的关键区别，可以用 **“Push” 与 “Pull”** 模型来类比。
+
+- **工具 (Tools) - Pull 模型**
+  - **发起者**: LLM。
+  - **流程**: LLM 在处理任务时，如果认为自身信息或能力不足，它会**主动决定**去调用一个工具来“拉取”所需的数据或执行一个动作。
+  - **例子**: “我需要天气信息”，于是 LLM 调用`get-weather`工具。
+- **资源 (Resources) - Push 模型**
+  - **发起者**: 用户 (你)。
+  - **流程**: 你作为用户，认为 LLM 需要某些特定的上下文信息才能更好地完成任务，于是你**主动选择**一个资源，将其内容“推送”给 LLM。
+  - **例子**: “我要问你关于这个数据库的问题，先把它的结构图（Schema）给你”，于是用户选择并提供了`database-schema`资源。
+
+### 当前资源的现状与局限性
+
+- **客户端支持**:
+  - **Claude Desktop 支持**。
+  - **Tome 目前不支持**。如果你在使用 Tome，可以暂时跳过这部分内容。
+- **使用频率**:
+  - 目前，资源的实际使用远不如工具广泛。它更像是一个由 Anthropic 提出的实验性功能，用于探索除了工具之外的其他交互方式。
+- **静态性质**:
+  - 这是当前资源最大的限制：它们是**静态的**。你只能提供一个预先定义好的、固定的信息块。
+  - 无法像工具那样动态传入参数来获取定制化的内容。
+- **未来发展**:
+  - 一个名为 **“资源模板 (Resource Templates)”** 的新功能正在开发中，它将允许资源变得动态，可以接受参数。但这目前还未被广泛支持。
+
+### Q&A
+
+- **问：资源与一个“获取信息”的工具有何本质区别？**
+  - **答**：关键在于“谁发起了这个动作”。如果是 LLM 为了解决问题而去调用，那就是工具。如果是用户为了提供背景信息而主动给予，那就是资源。
+- **问：资源能用于 RAG（检索增强生成）吗？**
+  - **答**：可以，但与工具的用法不同。
+    - **工具用于 RAG**: 你可以创建一个`search_vector_db`工具。当 LLM 需要相关知识时，它会调用这个工具，传入关键词，**拉取**检索结果。
+    - **资源用于 RAG**: 你可以创建一个资源，其内容是“我所有可用的向量数据库列表”。用户可以**推送**这个列表给 LLM，然后问：“在这些数据库里，哪个最适合回答关于动物的问题？”
+
+根据实际代码，我来修改这份笔记，使其与你提供的代码完全一致：
+
+# 10-create-an-mcp-resource
+
+### 项目准备
+
+1. **克隆项目仓库**
+   - 本节课将使用 `mcp-issue-tracker` 项目。请先从 GitHub 克隆它。
+   - `git clone <repository_url>`
+2. **项目结构概览**
+   - `backend/`: 后端 API 服务器 (Fastify)。
+   - `frontend/`: 前端应用 (React)。
+   - `mcp/`: 我们存放 MCP 服务器代码的地方。
+3. **初始化新的 MCP 服务器**
+   - 在 `mcp/` 目录下，创建一个新文件夹，例如 `my-mcp`。
+   - 进入该目录并初始化一个新的 Node.js 项目：
+     ```bash
+     cd mcp/my-mcp
+     npm init -y
+     ```
+   - 安装所需依赖，**注意**这次新增了 `sqlite3`：
+     ```bash
+     npm install @modelcontextprotocol/sdk@1.16 zod@3.23.6 sqlite3@5.1.7
+     ```
+
+### 编码实现 (`main.js`)
+
+1. **创建 `main.js` 文件并添加导入**
+
+   - 引入 `McpServer`, `StdioServerTransport`, `sqlite3`, `path`, `fileURLToPath` 等模块。
+
+   ```javascript
+   import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+   import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+   import sqlite3 from "sqlite3";
+   import path from "path";
+   import { fileURLToPath } from "url";
+
+   const __filename = fileURLToPath(import.meta.url);
+   const __dirname = path.dirname(__filename);
+   ```
+
+2. **创建 MCP 服务器实例**
+
+   ```javascript
+   const server = new McpServer({
+     name: "issues-server",
+     version: "1.0.0",
+   });
+   ```
+
+3. **注册资源 (Register Resource)**
+
+   - 使用 `server.registerResource()` 方法注册数据库模式资源：
+
+   ```javascript
+   server.registerResource(
+     "database-schema", // 资源名称/ID
+     "schema://database", // 资源 URI（自定义协议）
+     {
+       title: "Database Schema",
+       description: "SQLite schema for the issues database",
+       mimeType: "text/plain",
+     },
+     async (uri) => {
+       // handler 实现
+     }
+   );
+   ```
+
+4. **实现异步处理函数**
+
+   - **a. 定位数据库文件**:
+
+     ```javascript
+     const dbPath = path.join(__dirname, "..", "backend", "database.sqlite");
+     ```
+
+   - **b. 连接数据库并查询模式**:
+
+     ```javascript
+     const schema = await new Promise((resolve, reject) => {
+       const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
+
+       db.all(
+         "SELECT sql FROM sqlite_master WHERE type='table' AND sql IS NOT NULL ORDER BY name",
+         (err, rows) => {
+           db.close();
+           if (err) reject(err);
+           else resolve(rows.map((row) => row.sql + ";").join("\n"));
+         }
+       );
+     });
+     ```
+
+     - 使用 `sqlite3.OPEN_READONLY` 模式确保只读访问
+     - 查询 `sqlite_master` 表获取所有表的创建语句
+     - 为每个 SQL 语句添加分号并用换行符连接
+
+5. **返回资源内容**
+
+   ```javascript
+   return {
+     contents: [
+       {
+         uri: uri.href, // 使用传入的 uri 参数
+         mimeType: "text/plain",
+         text: schema, // 格式化后的数据库模式
+       },
+     ],
+   };
+   ```
+
+6. **启动服务器**
+   ```javascript
+   const transport = new StdioServerTransport();
+   await server.connect(transport);
+   ```
+
+# 11-add-resource-to-claude-desktop.txt
+
+### 配置步骤
+
+1. **打开并编辑配置文件**
+   - 与添加工具的流程完全相同：打开 Claude 桌面应用 -> `Settings` -> `Developer` -> `Edit Config`。
+2. **添加新的服务器条目**
+   - 仿照之前的格式，为我们的新资源服务器添加一个条目。这次，我们将使用 `mcp-issue-tracker` 项目中的 `main.js` 文件。
+     ```json
+     {
+       // ... (其他服务器定义)
+       "issue-server": {
+         "command": "/path/to/your/node",
+         "args": ["/path/to/mcp-issue-tracker/mcp/my-mcp/main.js"],
+         "env": {
+           "NODE_OPTIONS": "--no-deprecation"
+         }
+       }
+     }
+     ```
+
+- **关键**：确保 `args` 中的路径正确指向你在 `mcp-issue-tracker` 项目下创建的 `main.js` 文件。
+
+### 启动、调试与使用
+
+1. **重启 Claude**
+   - 保存配置文件后，完全退出并重启 Claude 桌面应用。
+2. **调试**
+   - 如果服务器启动失败，请遵循之前的调试流程：
+     - 打开开发者设置中的日志文件夹。
+     - 查找名为 `issue-server.log` 的文件，并检查其中的错误信息。
+   - **常见的错误**:
+     - 路径错误（拼写错误、文件位置不符）。
+     - 代码中的语法错误或逻辑错误（例如，将 `.map()` 误写为 `.maps()`）。
+   - **调试循环**: 由于每次修改后都需要重启 Claude，这个调试过程可能显得有些笨拙，但这是目前最直接的方法。
+3. **使用资源**
+   - 在 Claude 的聊天输入框中，你会看到一个 **`+`** 号按钮。
+   - 点击 `+` 号，会弹出一个菜单，显示所有可用的资源。
+   - 从菜单中选择 `Add from Issue Server` -> `Database Schema`。
+   - **操作结果**:
+     - 资源的内容（我们从数据库中提取的 Schema 字符串）会被加载到当前的聊天上下文中。
+     - 你可以点击查看加载的内容，确认它是否正确。
+
+### 资源的核心价值与应用场景
+
+- 一旦资源被加载，你就可以像与普通文本对话一样，让 LLM 对它进行分析和提问。
+- **示例提问**:
+
+  ```
+  用通俗易懂的语言向我解释一下这个数据库的结构。
+
+  ```
+
+- **价值体现**:
+  - **数据库结构**: 对于理解一个陌生的代码库非常有帮助。
+  - **文档**: 可以将 PDF、Google Doc 或 Markdown 文档作为资源附加，然后让 LLM 总结、回答关于文档的问题。
+  - **附件功能**: 实际上，Claude 等应用中常见的“附加文件”（如图片、代码文件）功能，其底层实现原理就类似于 MCP 的资源。
+- **动态资源的思考**:
+  - 虽然当前的资源是静态的，但这启发了我们未来的可能性：
+  - 如果你在构建一个 CMS（内容管理系统），你可以动态地为每一篇文章注册一个独立的资源，然后让用户可以针对任何一篇文章进行提问和分析。
+
+# 12-prompts.txt
+
+### 核心概念：资源 vs. 提示
+
+- **资源 (Resource)**：向 LLM 提供 **上下文 (Context)**。它是一份供 LLM 参考的“材料”，不包含直接的指令。
+- **提示 (Prompt)**：向 LLM 提供 **指令 (Command)**。它是一段预设的、可复用的命令，用来引导 LLM 完成特定任务。
+- **比喻**:
+  - **资源**: 像是在考试时发给学生的一张参考资料表。
+  - **提示**: 像是发给学生的具体的考题或答题要求。
+
+### 提示的特点与优势
+
+- **动态参数**: 与静态的资源不同，提示可以接受参数，从而动态地构建指令内容。
+- **复用性**: 可以将复杂、常用的指令封装成一个提示，方便用户随时调用。
+- **一致性**: 确保团队成员在使用 LLM 执行特定任务（如代码审查）时，遵循相同的标准和流程。
+
+### 案例：构建一个代码风格审查器
+
+1. **目标**: 创建一个 MCP 提示，让 LLM 根据 Airbnb 的 JavaScript 代码风格指南来审查一段代码。
+2. **准备**:
+   - 下载 Airbnb 的风格指南（一个很长的 Markdown 文件），并保存到项目中，例如 `style-guide.md`。
+3. **创建服务器 (`style-checker.js`)**:
+   - **读取指南**: 在服务器启动时，使用 Node.js 的 `fs.readFileSync` 将整个风格指南文件读入内存，存为一个字符串。
+   - **注册提示**: 使用 `server.registerPrompt()` 方法。
+     ```jsx
+     server.registerPrompt("review-code", {
+       title: "Code Review",
+       argSchema: {
+         code: z.string(), // 接收一个名为 'code' 的字符串参数
+       },
+       // ... handler implementation
+     });
+     ```
+   - **实现 `handler` 函数**:
+     - `handler` 接收用户传入的 `code` 参数。
+     - **核心任务**: 构建一个发送给 LLM 的完整提示字符串。这个字符串通常包含：
+       1. **任务指令**: "请审查以下代码是否遵循我们的最佳实践..."
+       2. **参考资料**: 将之前读入内存的 Airbnb 风格指南字符串插入到这里。
+       3. **待处理数据**: 将用户输入的 `code` 字符串插入到这里。
+     - **返回格式**: `handler` 必须返回一个符合 OpenAI 聊天 API 格式的 `messages` 数组。
+       ```jsx
+       return {
+         messages: [
+           {
+             role: "user",
+             content: [
+               {
+                 type: "text",
+                 text: "这是构建好的完整提示...",
+               },
+             ],
+           },
+         ],
+       };
+       ```
+
+### 使用与效果
+
+- **配置**: 将这个新的 `style-checker.js` 服务器添加到 Claude 的配置文件中并重启。
+- **调用**:
+  - 在 Claude 聊天框中点击 `+` 号。
+  - 选择 `Use from Code Style Server` -> `Review Code`。
+  - Claude 会弹出一个输入框，让你粘贴需要审查的代码。
+- **结果**:
+  - 你粘贴的代码、风格指南以及预设的指令被一同发送给 LLM。
+  - LLM 会返回一段详细的代码审查报告，指出哪些地方不符合 Airbnb 的风格规范，并提供修改建议。
+
+### 提示的潜在应用场景
+
+- **协作**: 在团队项目中，可以创建一个共享的提示库，用于代码审查、文档生成、Bug 报告格式化等，确保团队工作流程的一致性。
+- **自动化**: 与像 Devin 这样的自动化编码代理结合，可以使用提示来规定其行为，例如：“在提交 PR 之前，请务必运行此代码审查提示，并修复所有问题。”
+
+### 注意事项：上下文窗口
+
+- 将一个巨大的风格指南（如此案例）作为提示的一部分，会大量消耗 LLM 的上下文窗口。
+- 对于免费或基础版用户，这可能会超出限制。付费用户通常拥有更大的上下文窗口。
+
+# 13-roots-sampling-elicitation.txt
+
+### 介绍
+
+MCP 协议仍在快速发展中。以下是一些已经规划但尚未被 Claude Desktop 等主流客户端广泛支持的新特性。这些特性展示了 MCP 的未来发展方向。
+
+### 特性 1：Roots
+
+- **概念**: “Roots”指的是一个**文件系统目录**。
+- **功能**: 授权 MCP 服务器（以及通过它操作的 LLM）对指定目录及其子目录中的文件进行读取、写入、修改和删除操作。
+- **类比**: 就像在 VS Code 中“打开一个文件夹”，之后 VS Code 内部的所有功能（包括 AI Agent）都可以在这个文件夹的范围内操作。
+- **应用场景**:
+  - 在像 Cursor 或 VS Code Agent 这样的编码环境中非常有用，允许 AI 直接修改项目文件。
+  - 也可以用于文档管理，例如告诉 Claude：“这是我的所有 Excel 文档目录，现在回答我关于这些文档的问题。”
+
+### 特性 2：Sampling
+
+- **概念**: 赋予**MCP 服务器直接向 LLM 发起提示**的能力。
+- **流程**:
+  1. **MCP 服务器发起**: 服务器生成一个提示并准备发送给 LLM。
+  2. **人在回路 (Human-in-the-Loop)**: 在发送前，这个提示会展示给用户。用户可以**审查、修改**，然后批准发送。
+  3. **LLM 响应**: LLM 处理提示并返回结果。
+  4. **用户再次介入**: 在将 LLM 的响应返回给 MCP 服务器之前，用户同样可以**审查和修改**这个响应。
+- **价值**:
+  - 极大地增强了 MCP 服务器的能力，使其可以自主地进行 AI 交互，而不仅仅是被动地执行任务。
+  - 实现了人机协作的闭环，用户在每一步都拥有最终控制权。
+- **术语注意**: “Sampling”在 AI 领域有多种含义，这里的“采样”特指 MCP 协议中的这一特定工作流。
+
+### 特性 3：Elicitation
+
+- **概念**: 允许 MCP 服务器在执行工具的过程中，**暂停并向用户请求额外信息**。
+- **功能**: 解决了工具在执行时发现信息不足的问题。
+- **类比**: 想象一个填写表单的工具。当它发现表单中有一个必填项（例如“你的姓名”）而用户没有在初始请求中提供时，它可以通过“引出”来暂停执行，并向用户提问：“我需要你的姓名才能继续，请提供。”
+- **流程**:
+  1. 工具开始执行。
+  2. 发现缺少必要信息。
+  3. 触发“Elicitation”，向用户发送一个问题。
+  4. 工具执行暂停，等待用户回答。
+  5. 用户提供信息后，工具恢复执行。
+- **价值**: 使得工具的交互更加流畅和智能，避免了因信息不全而导致的简单失败和重试。
+
+# 14-issue-tracker-app-tour.txt
+
+### 应用概览
+
+- **项目**: `mcp-issue-tracker`，一个类似于 GitHub Issues 的简单任务跟踪系统。
+- **功能**:
+  - 用户注册与登录。
+  - 创建、查看、编辑 Issue。
+  - 设置 Issue 的状态、优先级、指派人、标签等。
+- **技术栈**:
+  - 后端: Fastify (Node.js)
+  - 前端: React
+  - 数据库: SQLite
+- **运行**: 在项目根目录运行 `npm run dev`，它会同时启动前后端服务。
+
+### 我们的目标
+
+- 构建一个 MCP 服务器，让我们可以通过自然语言与这个 Issue Tracker 进行交互。
+- **理想的工作流**:
+  1. 在编码时，通过 Claude Code 说：“这里有个 bug，帮我创建一个 issue，描述是...，分配给我，标签是‘bug’。”
+  2. 几天后，对 Claude Code 说：“把我所有未完成的 issue 列出来。”
+  3. 选择一个 issue，说：“我们现在来解决这个 issue。” AI 加载相关上下文并开始工作。
+  4. 完成后，说：“为这个修复创建一个 PR，并关闭对应的 issue。”
+
+### 核心设计理念：操作顺序 (Order of Operations)
+
+- **常见的误区**: 为每个 API 端点创建一个对应的 MCP 工具（例如，一个`createIssue`工具，一个`assignUser`工具，一个`addTag`工具...）。
+- **为什么这是个坏主意**:
+  - **脆弱性**: 这要求 LLM 必须严格按照正确的顺序调用一系列工具，并在工具之间正确地传递 ID。例如，必须先创建 issue 获得 ID，然后才能用这个 ID 去指派用户。
+  - **LLM 的不可靠性**: LLM 并不总是能完美地理解和执行这种多步、有依赖关系的流程。它可能会搞错顺序，或者错误地解析 ID（例如，当你说“assign it to me”，它可能理解 ID 为“me”，而不是去查询你的用户 ID）。
+- **更好的方法：工作流/任务导向 (Jobs-Oriented Approach)**
+  - 设计一个**更高级别、更全面的工具**，将一个完整的业务流程封装起来。
+  - 例如，创建一个名为`createFullIssue`的工具，这个工具接收所有信息（标题、描述、指派人姓名、标签名等），然后在**服务器端的代码中**，确定性地、按正确顺序地完成所有 API 调用。
+  - 这种方法将复杂的逻辑和顺序依赖性从不可靠的 LLM 转移到了可靠、确定性的代码中。
+
+### 认证（Authentication）问题
+
+- **挑战**: 如何安全地让一个 AI 代理代表用户进行操作，这是一个尚未完全解决的行业难题。
+- **本课程的简化方案**:
+  - 我们不会实现复杂的 OAuth 流程。
+  - 应用界面提供了一个“Copy API Token”按钮。
+  - 我们将在调用工具时，直接将这个 Token 作为参数传递。
+- **未来方向**:
+  - 这正是 MCP 的“引出(Elicitation)”特性可以解决的问题：当工具需要 API 密钥时，它可以暂停并向用户请求输入。
+
+### 标签（Tags）问题
+
+- **挑战**: 如果允许 LLM 自由创建标签，它可能会为同一个概念创造出多个相似但不完全相同的标签（如 `bug`, `bugs`, `bug-fix`），导致标签系统混乱。
+- **解决方案**: 在 MCP 服务器的设计中，应提供一个工具来**查询所有可用的标签**，并引导 LLM 从现有标签中进行选择，而不是随意创建新的。
+
+# 15-create-the-registertool.txt
+
+### 目标
+
+我们将实践之前讨论过的“坏主意”——为每个 API 端点创建一个独立的 MCP 工具。这样做是为了让你亲身体验这种方法的弊端，从而更好地理解“工作流导向”设计的优势。
+
+### 步骤 1：模块化工具定义
+
+- 在 `my-mcp` 目录下，创建一个新文件 `api-based-tools.js`。
+- 我们将在这个文件中定义所有与 API 直接交互的工具，并将其作为一个模块导出。
+- 之后，在主服务器文件（例如`main.js`）中导入并注册这些工具。这种模块化的方式使得代码更清晰。
+
+### 步骤 2：创建通用的 API 请求辅助函数
+
+- 为了避免在每个工具中重复编写 `fetch` 逻辑，我们先创建一个名为 `makeRequest` 的通用异步函数。
+- **功能**:
+  - 接收 `method`, `url`, `data` (请求体), และ `options` (如 headers) 等参数。
+  - 处理请求头的设置（如 `Content-Type`, API Key）。
+  - 使用 `fetch` 发送请求。
+  - 统一处理响应：解析 JSON，并在解析失败时优雅地回退到文本。
+  - 统一处理错误。
+  - 返回一个包含 `status`, `data`, `headers` 的标准化结果对象。
+
+### 步骤 3：实现 `issue-create` 工具
+
+- 使用 `server.registerTool()` 来定义一个用于创建 Issue 的工具。
+- **`inputSchema` (输入模式)**: 这是最复杂的部分，需要精确定义 API 所需的所有参数。
+  - `title`: `z.string()`.
+  - `description`: `z.string().optional()`.
+  - `status`: 使用 `z.enum(['not started', 'in progress', 'done'])` 来限制可选值。
+  - `priority`: 同样使用 `z.enum()`。
+  - `assignedUserId`: `z.string().optional()`.
+  - `tagIds`: `z.array(z.number()).optional()` (注意这里需要的是标签的 ID，而不是名称)。
+  - `apiKey`: `z.string()`，用于认证。
+  - **`.describe()`**: **非常重要**。为每个字段添加清晰的描述，这是 LLM 理解如何使用这个字段的关键。例如，为`apiKey`添加描述 "API key for authenticating"。
+- **`handler` (处理函数)**:
+  - `handler` 函数接收一个包含所有输入参数的 `params` 对象。
+  - **解构参数**: 使用 ES6 解构赋值，将 `apiKey` 单独取出，其余参数收集到 `issueData` 对象中。
+    ```jsx
+    const { apiKey, ...issueData } = params;
+    ```
+  - **调用 API**: 使用我们之前创建的 `makeRequest` 辅助函数。
+    ```jsx
+    const result = await makeRequest(
+      "POST",
+      `${apiBaseUrl}/issues`,
+      issueData,
+      { headers: { "x-api-key": apiKey } } // 传递API Key
+    );
+    ```
+  - **返回结果**:
+    - 将从 API 收到的 `result` 对象转换成格式化的 JSON 字符串。
+    - `JSON.stringify(result, null, 2)`: 使用两个空格的美化格式，可以帮助 LLM 更好地解析返回的 JSON 数据。
+    - 将此字符串作为 `text/plain` 内容返回给 LLM。
+
+### 体验与反思
+
+- 编写这个工具的过程相当繁琐，需要手动映射 API 的每一个字段。
+- **提示**: 在实际工作中，可以利用 OpenAPI 规范，让 Claude Code 等工具自动生成大部分这样的“样板代码”，然后进行微调。
+- 完成这个工具后，我们已经为后续的实验埋下了伏笔：LLM 在使用这个“低级别”工具时，将会遇到需要预先知道`assignedUserId`和`tagIds`等问题，这正是“工作流导向”设计所要解决的痛点。
