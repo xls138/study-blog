@@ -1,0 +1,1318 @@
+import { CourseLayout } from "@/components/CourseLayout";
+
+export const course = {
+  title: "Fullstack TypeScript, v2 (feat. Zod)",
+  imageUrl: "/courses/fullstack-typescript-v2.webp",
+  date: "2025-05-19",
+  author: {
+    name: "Steve Kinney",
+    imageUrl: "/authors/SteveKinney.webp",
+  },
+  description:
+    "找到适合你技术栈的端到端类型安全策略！在客户端和服务器应用之间共享TypeScript类型。借助Zod模式消除API变更的不确定性，确保每个响应都符合预期。在客户端和服务器端均使用tRPC，打造更流畅的开发体验。通过Prisma简化数据库迁移，并生成Zod模式，在数据库、服务器和客户端之间建立严密的类型契约。",
+};
+
+export const metadata = {
+  title: course.title,
+};
+
+export default (props) => <CourseLayout course={course} {...props} />;
+
+# 0-introduction
+
+## 课程概述
+
+这门课程讨论的是跨代码库的 TypeScript 类型安全问题。虽然在单个代码库内部我们可以实现完美的类型安全，但在不同代码库之间（特别是通过 HTTP 通信时）存在"信任缺口"。
+
+## 核心问题
+
+### 类型安全的信任危机
+
+- 前端应用可能完全类型安全，但 `response.json()` 返回的是 `any` 类型
+- 后端 Express 路由中的 `request.body` 也是 `any` 类型
+- 我们通常基于"信任"假设数据符合预期类型，但这种信任经常被打破
+
+### 常见故障原因统计
+
+根据讲师的经验总结：
+
+- 53% - 后端团队更改 API 未通知前端
+- 29% - 某人升级了依赖，导致 API 变更
+- 其他 - 意外删除 S3 存储桶等操作失误
+
+## 解决方案方向
+
+### 从乐观信任到悲观验证
+
+- 不再盲目信任外部数据
+- 通过验证建立信任："信任但验证"
+- 在应用边界处进行严格的类型检查
+
+### 需要验证的边界点
+
+- API 响应数据
+- 客户端发送的负载
+- 数据库输入/输出
+- 用户表单输入
+
+## 技术挑战示例
+
+```tsx
+// 问题：response.json() 返回 any 类型
+const response = await fetch("/api/tasks");
+const data = response.json(); // 类型为 any
+
+// 表面解决方案：类型断言
+const getTask = async (): Promise<Task> => {
+  // ...
+  return response.json(); // any 类型会绕过所有类型检查
+};
+```
+
+## 课程目标
+
+学习如何在应用程序的各个交互点之间保持类型安全，特别是：
+
+- API 边界
+- 数据库边界
+- 微服务间通信
+- 用户输入验证
+
+---
+
+# 1-type-guards-vs-schema-validation
+
+## 类型守卫的问题
+
+### 手写类型守卫的复杂性
+
+```tsx
+function isTask(value: unknown): value is Task {
+  // 需要检查是否为对象
+  if (typeof value !== "object") return false;
+
+  // 还要检查不是 null（typeof null === 'object'）
+  if (value === null) return false;
+
+  // 检查每个属性...
+  // 对于嵌套对象会变得极其复杂
+}
+```
+
+### 手写类型守卫的缺陷
+
+- 代码冗长且容易出错
+- 对于嵌套对象处理困难
+- 逻辑错误会导致运行时问题
+- TypeScript 无法验证守卫函数的正确性
+
+## Schema 验证库介绍
+
+### 主要库对比
+
+1. **Zod** - 本课程重点，与 AI 模型集成良好
+2. **Yup** - 名字最有趣，API 相似
+3. **io-ts** - 函数式编程风格
+
+### 为什么选择 Zod
+
+- 与 OpenAI 等 AI 模型原生集成
+- 可转换为 JSON Schema
+- TypeScript 优先设计
+- 活跃的生态系统
+
+## Zod 基础语法
+
+### 简单 Schema 定义
+
+```tsx
+const taskSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  completed: z.boolean(),
+});
+```
+
+### 类型推导
+
+```tsx
+type Task = z.infer<typeof taskSchema>;
+// 自动生成对应的 TypeScript 类型
+```
+
+### 验证方法
+
+```tsx
+// 抛出异常的解析
+const task = taskSchema.parse(data);
+
+// 安全解析，返回结果对象
+const result = taskSchema.safeParse(data);
+if (result.success) {
+  // result.data 是验证后的数据
+} else {
+  // result.error 包含错误信息
+}
+```
+
+## 其他库语法对比
+
+### Yup 示例
+
+```tsx
+const schema = yup.object().shape({
+  name: yup.string().required(),
+  age: yup.number().required(),
+});
+await schema.validate(data);
+```
+
+### io-ts 示例
+
+```tsx
+const UserType = t.type({
+  name: t.string,
+  age: t.number,
+});
+UserType.decode(data);
+```
+
+## 核心优势
+
+- 大幅减少样板代码
+- 自动类型推导
+- 丰富的验证规则
+- 清晰的错误信息
+- 运行时安全保障
+
+---
+
+# 2-introduction-to-zod
+
+## Zod 生态系统
+
+### 集成库支持
+
+Zod 官网展示了丰富的生态系统集成：
+
+- **React Hook Form** - 表单验证
+- **Formik** - 另一个表单库选择
+- **SvelteKit** - 全栈框架集成
+- **JSON Schema** 转换工具
+- **TypeScript 类型**生成工具
+
+### 关键优势
+
+可以在整个应用栈中使用相同的 schema：
+
+- 前端表单验证
+- API 请求体验证
+- 数据库输入验证
+- 响应数据验证
+
+## 高级验证功能
+
+### 类型强制转换
+
+```tsx
+z.string().email(); // 验证邮箱格式
+z.number().positive(); // 正数验证
+z.coerce.string(); // 强制转换为字符串
+z.coerce.number(); // 强制转换为数字
+```
+
+### 字符串验证
+
+```tsx
+z.string()
+  .min(5) // 最小长度
+  .max(100) // 最大长度
+  .email() // 邮箱格式
+  .url() // URL 格式
+  .uuid(); // UUID 格式
+```
+
+### 数字验证
+
+```tsx
+z.number()
+  .int() // 整数
+  .positive() // 正数
+  .min(0) // 最小值
+  .max(100); // 最大值
+```
+
+## 复杂类型构建
+
+### 字面量类型
+
+```tsx
+z.literal("hello"); // 精确匹配字符串
+z.enum(["red", "green", "blue"]); // 枚举值
+```
+
+### 数组和元组
+
+```tsx
+z.array(z.string()); // 字符串数组
+z.tuple([z.string(), z.number()]); // 固定长度元组
+```
+
+### 联合类型和交集
+
+```tsx
+z.union([z.string(), z.number()]); // 联合类型
+z.intersection(schema1, schema2); // 交集类型
+```
+
+## Schema 组合
+
+### 引用其他 Schema
+
+```tsx
+const addressSchema = z.object({
+  street: z.string(),
+  city: z.string(),
+});
+
+const userSchema = z.object({
+  name: z.string(),
+  address: addressSchema, // 引用其他 schema
+});
+```
+
+### 扩展 Schema
+
+```tsx
+const baseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+const extendedSchema = baseSchema.extend({
+  email: z.string().email(),
+});
+```
+
+### 实用工具方法
+
+```tsx
+schema.pick({ name: true }); // 选择特定字段
+schema.omit({ password: true }); // 排除特定字段
+schema.partial(); // 所有字段变为可选
+```
+
+---
+
+# 3-zod-basics-exercise
+
+## 项目结构介绍
+
+### 目录组织
+
+```
+├── client/          # React 前端应用
+├── server/          # Express 后端应用
+├── shared/          # 共享代码
+└── exercises/       # 练习代码
+    └── zod/        # Zod 基础练习
+
+```
+
+### 开发环境设置
+
+```bash
+cd exercises/zod
+npm test           # 运行所有测试
+npm test exercises # 只运行特定测试文件
+
+```
+
+## 基础 Schema 练习
+
+### 练习 1：用户 Schema
+
+创建用户对象验证：
+
+```tsx
+const userSchema = z.object({
+  name: z.string(),
+  age: z.number().int().positive(),
+});
+
+type User = z.infer<typeof userSchema>;
+```
+
+**学习要点：**
+
+- 基础对象定义
+- 数字验证规则
+- 类型推导使用
+
+### 练习 2：可选字段和默认值
+
+```tsx
+const userSchema = z.object({
+  name: z.string(),
+  age: z.number().int().positive().optional().default(0),
+});
+```
+
+**重要发现：**
+
+- 方法链的顺序很重要
+- `default()` 会影响生成的 TypeScript 类型
+- 有默认值时，字段在类型中不再是可选的
+
+### 练习 3：嵌套 Schema
+
+```tsx
+const addressSchema = z.object({
+  street: z.string(),
+  city: z.string(),
+  zip: z
+    .string()
+    .length(5)
+    .regex(/^\d{5}$/),
+  apartment: z.string().optional(),
+});
+
+const userProfileSchema = z.object({
+  name: z.string(),
+  addresses: z.array(addressSchema),
+});
+```
+
+**关键概念：**
+
+- Schema 可以引用其他 Schema
+- JavaScript 变量作用域规则适用（需要先定义才能引用）
+- 数组类型的定义方法
+
+## 高级类型练习
+
+### 练习 4：联合类型
+
+```tsx
+const anonymousSchema = z.literal("anonymous");
+const userSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+const userIdentitySchema = z.union([anonymousSchema, userSchema]);
+```
+
+### 练习 5：自定义验证
+
+```tsx
+const isPrime = (n: number) => {
+  // 质数检查逻辑
+};
+
+const primeNumberSchema = z.number().refine(isPrime, {
+  message: "Number must be prime",
+});
+```
+
+## 测试驱动开发流程
+
+### 开发步骤
+
+1. 移除测试中的 `.todo` 标记
+2. 运行测试查看失败信息
+3. 实现 Schema 使测试通过
+4. 验证类型推导结果
+
+### 调试技巧
+
+- 使用 `z.infer` 检查生成的类型
+- 观察测试失败信息了解预期行为
+- 利用 TypeScript 错误提示
+
+---
+
+# 4-zod-basics-solution
+
+## 自定义验证解决方案
+
+### Refine 方法使用
+
+```tsx
+const isPrime = (n: number) => {
+  if (n < 2) return false;
+  for (let i = 2; i <= Math.sqrt(n); i++) {
+    if (n % i === 0) return false;
+  }
+  return true;
+};
+
+const primeNumberSchema = z.number().refine(isPrime, {
+  message: "数字必须是质数",
+});
+```
+
+**关键特性：**
+
+- 先进行基础类型检查（number）
+- 然后应用自定义验证逻辑
+- 可以提供自定义错误信息
+- 验证失败时抛出带有错误信息的异常
+
+### 错误处理策略
+
+```tsx
+// 抛出异常的方式
+try {
+  const result = schema.parse(data);
+} catch (error) {
+  // 处理验证错误
+}
+
+// 安全解析方式
+const result = schema.safeParse(data);
+if (!result.success) {
+  console.log(result.error.message);
+}
+```
+
+## 数据转换功能
+
+### Transform 方法
+
+```tsx
+const dateSchema = z.string().transform((str) => new Date(str));
+```
+
+**应用场景：**
+
+- JSON API 中的日期字符串转换
+- 序列化数据的反序列化
+- 数据格式标准化
+
+**类型安全特性：**
+
+- Transform 输入参数自动推导为验证后的类型
+- 输出类型根据 transform 函数推导
+- 全程保持类型安全
+
+## 品牌类型（Branded Types）
+
+### 概念和用途
+
+```tsx
+const userIdSchema = z.string().brand<"UserId">();
+type UserId = z.infer<typeof userIdSchema>;
+
+// 使用时必须通过验证
+function getUser(id: UserId) {
+  /* ... */
+}
+
+// 直接传递字符串会报错
+getUser("123"); // ❌ TypeScript 错误
+
+// 必须通过 schema 验证
+getUser(userIdSchema.parse("123")); // ✅ 正确
+```
+
+**价值：**
+
+- 在类型层面区分不同用途的相同基础类型
+- 强制数据验证流程
+- 提高代码安全性和可读性
+
+## 实用工具类型
+
+### Pick、Partial、Omit 操作
+
+```tsx
+const fullUserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+  addresses: z.array(addressSchema),
+});
+
+// 选择特定字段
+const nameOnlySchema = fullUserSchema.pick({ name: true });
+
+// 所有字段变为可选
+const partialUserSchema = fullUserSchema.partial();
+
+// 排除特定字段
+const userWithoutEmailSchema = fullUserSchema.omit({ email: true });
+```
+
+**使用场景：**
+
+- API 不同端点需要不同字段组合
+- 更新操作（partial）vs 创建操作（完整）
+- 敏感信息过滤
+
+## 自定义类型验证
+
+### 复杂字符串模式
+
+```tsx
+const hexColorSchema = z
+  .custom<`#${string}`>((val) => {
+    if (typeof val !== "string") return false;
+    return /^#[0-9A-Fa-f]{3}$|^#[0-9A-Fa-f]{6}$/.test(val);
+  })
+  .brand<"HexColor">();
+```
+
+**特点：**
+
+- 支持自定义验证逻辑
+- 可以结合品牌类型使用
+- 适用于复杂的业务规则验证
+
+### 组合复杂 Schema
+
+```tsx
+const registrationFormSchema = z
+  .object({
+    username: usernameSchema,
+    password: passwordSchema,
+    confirmPassword: z.string(),
+    birthDate: birthDateSchema,
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "密码不匹配",
+    path: ["confirmPassword"],
+  });
+```
+
+**最佳实践：**
+
+- 将基础 schema 组合成复杂验证
+- 使用 refine 进行跨字段验证
+- 指定错误路径提高用户体验
+
+---
+
+# 5-advanced-zod-uses-exercise
+
+## 递归类型处理
+
+### 自引用 Schema 问题
+
+在 JavaScript 中，变量必须先定义后使用，这在递归类型中造成问题：
+
+```tsx
+// ❌ 这样会报错，因为 categorySchema 尚未定义完成
+const categorySchema = z.object({
+  name: z.string(),
+  subcategories: z.array(categorySchema), // 引用自身
+});
+```
+
+### 解决方案：z.lazy()
+
+```tsx
+const categorySchema = z.object({
+  name: z.string(),
+  subcategories: z.array(z.lazy(() => categorySchema)),
+});
+```
+
+**工作原理：**
+
+- `z.lazy()` 接收一个函数，延迟执行
+- 函数执行时，`categorySchema` 已经定义完成
+- 支持任意层级的嵌套结构
+
+## 数据预处理
+
+### preprocess 方法
+
+处理既可能是对象又可能是 JSON 字符串的数据：
+
+```tsx
+const flexibleSchema = z.preprocess(
+  (input) => {
+    // 如果是字符串，尝试解析为 JSON
+    if (typeof input === "string") {
+      try {
+        return JSON.parse(input);
+      } catch {
+        return input; // 解析失败保持原样
+      }
+    }
+    return input;
+  },
+  z.object({
+    type: z.literal("JSON"),
+    data: z.number(),
+  })
+);
+```
+
+**应用场景：**
+
+- API 可能返回字符串或对象
+- 配置文件处理
+- 用户输入标准化
+
+## 异步验证
+
+### 业务场景
+
+验证用户名是否已被占用：
+
+```tsx
+async function isUsernameTaken(username: string): Promise<boolean> {
+  // 模拟 API 调用
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(username === "admin"), 100);
+  });
+}
+
+const usernameSchema = z.string().refine(
+  async (username) => {
+    const taken = await isUsernameTaken(username);
+    return !taken;
+  },
+  { message: "用户名已被占用" }
+);
+```
+
+**使用注意事项：**
+
+- 验证函数必须返回 Promise
+- 适合表单验证场景
+- 可以结合防抖减少 API 调用
+
+## 类型强制转换
+
+### coerce 的威力
+
+```tsx
+const numberSchema = z.coerce.number().min(100);
+
+// 这些都会通过验证并转换：
+numberSchema.parse("150"); // → 150 (number)
+numberSchema.parse(200); // → 200 (number)
+numberSchema.parse("50"); // ❌ 抛出错误，小于100
+numberSchema.parse("abc"); // ❌ 无法转换为数字
+```
+
+### 其他强制转换
+
+```tsx
+z.coerce.boolean(); // "true" → true, "1" → true, "0" → false
+z.coerce.string(); // 123 → "123"
+z.coerce.date(); // "2023-01-01" → Date object
+```
+
+**使用场景：**
+
+- URL 查询参数处理（总是字符串）
+- 表单数据处理
+- 配置文件解析
+- API 数据标准化
+
+## 高级技巧总结
+
+### 何时使用各种功能
+
+- **z.lazy()**: 递归数据结构（树、图）
+- **preprocess**: 数据格式不统一
+- **async refine**: 需要外部数据源验证
+- **coerce**: 类型转换需求
+- **brand**: 类型安全的字符串标识
+
+### 性能考虑
+
+- 异步验证增加延迟，谨慎使用
+- 复杂的 refine 函数影响性能
+- 递归结构注意深度限制
+- 预处理尽量简单高效
+
+# 6-validating-json-schemas
+
+## Schema 共享策略
+
+### 跨技术栈的统一验证
+
+Zod schemas 可以在整个应用栈中重复使用：
+
+- **前端**：表单验证、API 响应验证
+- **后端**：请求体验证、数据库输出验证
+- **数据层**：输入/输出验证
+- **文件系统**：JSON 文件读写验证
+
+### JSON Schema 序列化
+
+```tsx
+// Zod schema 转换为 JSON Schema
+const zodSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+});
+
+// 可以序列化为标准 JSON Schema
+const jsonSchema = zodToJsonSchema(zodSchema);
+```
+
+**优势：**
+
+- 可以在不同语言间共享
+- 支持 Go、Python、Ruby 等后端语言
+- 可以托管为独立的配置文件
+- 与 Swagger/OpenAPI 集成
+
+## 从类型到 Schema 的反向工程
+
+### satisfies 关键字验证
+
+```tsx
+// 已有的 TypeScript 类型
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+// 确保 schema 符合现有类型
+const userSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+}) satisfies ZodType<User>;
+```
+
+**工作原理：**
+
+- 使用 TypeScript 5+ 的 `satisfies` 关键字
+- 编译时验证 schema 与类型的一致性
+- 类型不匹配时显示 TypeScript 错误
+- 保持 schema 和类型的同步
+
+## 实用验证模式
+
+### 条件验证策略
+
+```tsx
+// 使用 safeParse 进行条件处理
+const result = schema.safeParse(data);
+if (result.success) {
+  // 处理验证成功的情况
+  processValidData(result.data);
+} else {
+  // 根据不同错误类型进行处理
+  handleValidationError(result.error);
+}
+```
+
+### 多重验证方案
+
+适用于 API 可能返回不同格式数据的场景：
+
+```tsx
+const handleApiResponse = (data: unknown) => {
+  const formatAResult = formatASchema.safeParse(data);
+  if (formatAResult.success) {
+    return handleFormatA(formatAResult.data);
+  }
+
+  const formatBResult = formatBSchema.safeParse(data);
+  if (formatBResult.success) {
+    return handleFormatB(formatBResult.data);
+  }
+
+  throw new Error("无法识别的数据格式");
+};
+```
+
+## 性能和最佳实践
+
+### 验证边界策略
+
+只在必要的边界进行验证：
+
+- API 请求/响应边界
+- 数据库输入/输出边界
+- 用户输入边界
+- 第三方服务集成点
+
+### 避免过度验证
+
+- 应用内部传递的已验证数据无需重复解析
+- 验证后的数据享有完整的类型安全
+- "不做事比做事快" - 避免不必要的性能开销
+
+---
+
+# 7-setup-the-api-project
+
+## 项目架构概览
+
+### 目录结构
+
+```
+├── client/           # React 前端应用（端口 4000）
+│   └── src/
+│       ├── api.ts    # API 调用逻辑
+│       └── types.ts  # 类型定义
+├── server/           # Express 后端应用（端口 4001）
+│   └── src/
+│       ├── server.ts # 路由和业务逻辑
+│       └── database/ # 数据库相关
+└── shared/           # 共享代码和类型
+
+```
+
+### 开发环境启动
+
+**VS Code 用户：**
+
+```bash
+Cmd + Shift + P → Run Task → Start
+
+```
+
+**手动启动：**
+
+```bash
+# 终端 1：启动前端
+cd client && npm run dev
+
+# 终端 2：启动后端
+cd server && npm run dev
+
+```
+
+## 核心关注点
+
+### 前端边界点
+
+- **api.ts** - HTTP 请求的主要边界
+- **types.ts** - 类型定义（将被 schema 替换）
+- 组件间的数据传递相对安全
+
+### 后端边界点
+
+- **server.ts** - Express 路由处理
+- **database/** - 数据持久化层
+- SQL 预处理语句和查询结果
+
+### 共享资源策略
+
+关于类型和 schema 的存放位置：
+
+- **服务端优先**：schema 从后端 API 契约出发
+- **客户端优先**：根据 UI 需求定义数据结构
+- **独立仓库**：类型作为独立的包管理
+- **monorepo shared**：在同一仓库的共享目录
+
+## 实际应用场景
+
+### 待办事项应用特点
+
+- CRUD 操作的标准模式
+- 简单但实用的数据模型
+- 涵盖常见的验证需求
+- 适合演示跨层级类型安全
+
+### 真实世界的复杂性
+
+虽然示例简单，但涵盖了生产环境中的关键模式：
+
+- 表单输入验证
+- API 契约验证
+- 数据库类型转换
+- 错误边界处理
+
+---
+
+# 8-adding-types-to-requests-responses
+
+## Express 类型系统的现实
+
+### 默认类型状况
+
+Express 中的关键对象都存在类型安全问题：
+
+```tsx
+// 默认情况下的类型
+req.body: any              // 请求体
+req.params: { [key: string]: string }  // 路径参数
+req.query: ParsedQs        // 查询参数（复杂的联合类型）
+req.locals: any            // 中间件数据
+
+```
+
+### 查询参数的复杂性
+
+`req.query` 的类型定义特别复杂：
+
+```tsx
+string | string[] | ParsedQs | ParsedQs[] | undefined
+
+```
+
+这种类型虽然比 `any` 好，但在实际使用中仍然需要大量类型守卫。
+
+## Express 泛型类型系统
+
+### Request 和 Response 的泛型结构
+
+```tsx
+Request
+  Params,           // 路径参数类型
+  ResponseBody,     // 响应体类型
+  RequestBody,      // 请求体类型
+  QueryParams,      // 查询参数类型
+  Locals           // locals 类型
+>
+
+```
+
+### 手动类型注解的局限性
+
+```tsx
+// 可以手动指定类型
+interface CreateTaskRequest extends Request {
+  body: CreateTaskBody;
+}
+
+app.post("/tasks", (req: CreateTaskRequest, res) => {
+  // req.body 现在有正确的类型
+  const task = req.body; // 类型安全的
+});
+```
+
+**问题：**
+
+- 仍然基于"信任"而非验证
+- TypeScript 相信你的类型声明
+- 运行时数据可能不符合声明的类型
+- 没有实际的数据验证
+
+## 核心问题分析
+
+### 信任 vs 验证
+
+当前的类型系统问题：
+
+```tsx
+// 问题：基于假设的类型安全
+app.post("/tasks", (req: Request<{}, TaskResponse, CreateTaskBody>, res) => {
+  // TypeScript 认为 req.body 是 CreateTaskBody
+  // 但实际可能是任何数据
+  const task = req.body; // 可能不是我们期望的类型
+});
+```
+
+### 需要解决的边界
+
+1. **请求边界**：验证传入的数据
+2. **响应边界**：确保返回正确的数据格式
+3. **数据库边界**：处理 SQL 查询结果的类型转换
+4. **中间件边界**：验证中间件添加的数据
+
+## 解决方案预览
+
+### 从类型注解到实际验证
+
+下一步将使用 schema 验证替代单纯的类型注解：
+
+```tsx
+// 目标：实际验证而不仅仅是类型注解
+app.post("/tasks", (req, res) => {
+  // 验证并获取类型安全的数据
+  const taskData = createTaskSchema.parse(req.body);
+  // 现在我们知道 taskData 确实符合预期格式
+});
+```
+
+这种方法将"信任但验证"的原则应用到 Express 应用的每个边界点。
+
+---
+
+# 9-api-server-schema-validation
+
+## 服务端 Schema 验证实践
+
+### 定义数据契约
+
+首先建立完整的数据模型：
+
+```tsx
+const taskSchema = z.object({
+  id: z.number(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  completed: z.boolean().default(false),
+});
+
+// 派生其他操作所需的 schema
+const createTaskSchema = taskSchema.omit({ id: true });
+const updateTaskSchema = taskSchema.partial().omit({ id: true });
+const taskListSchema = z.array(taskSchema);
+```
+
+**设计原则：**
+
+- 从完整的数据模型开始
+- 使用 `omit`、`partial` 等工具派生变体
+- 为不同操作定义专门的 schema
+
+### 请求体验证
+
+```tsx
+app.post("/tasks", async (req, res) => {
+  // 验证请求体
+  const taskData = createTaskSchema.parse(req.body);
+
+  // 此时 taskData 具有完整的类型安全
+  const result = await insertTask(taskData);
+  res.json({ message: "任务创建成功", id: result.insertId });
+});
+```
+
+**关键优势：**
+
+- `req.body` 从 `any` 转换为具体类型
+- 验证失败时自动抛出错误
+- 后续代码享受完整类型安全
+
+### 路径参数处理
+
+```tsx
+app.get("/tasks/:id", async (req, res) => {
+  // 路径参数默认是字符串，需要转换
+  const id = z.coerce.number().parse(req.params.id);
+
+  const task = await getTaskById(id);
+  const validatedTask = taskSchema.parse(task);
+
+  res.json(validatedTask);
+});
+```
+
+## 数据库边界验证
+
+### 输出数据验证
+
+```tsx
+app.put("/tasks/:id", async (req, res) => {
+  const id = z.coerce.number().parse(req.params.id);
+  const updates = updateTaskSchema.parse(req.body);
+
+  // 验证数据库查询结果
+  const existingTask = await getTaskById(id);
+  const validatedExisting = taskSchema.parse(existingTask);
+
+  const updatedTask = { ...validatedExisting, ...updates };
+  await updateTask(id, updatedTask);
+
+  res.json(validatedExisting);
+});
+```
+
+### 数据库类型兼容性处理
+
+SQLite 的特殊情况：
+
+```tsx
+// SQLite 存储布尔值为 0/1，需要强制转换
+const taskSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  description: z.string().optional(),
+  completed: z.coerce.boolean(), // 自动处理 0/1 转换
+});
+```
+
+## 验证策略和性能考虑
+
+### 边界验证原则
+
+**在这些地方进行验证：**
+
+- API 请求进入点
+- 数据库查询结果
+- 第三方服务响应
+
+**不需要验证的地方：**
+
+- 应用内部的已验证数据传递
+- 类型已经确定的计算结果
+
+### 错误处理
+
+```tsx
+app.post("/tasks", async (req, res) => {
+  try {
+    const taskData = createTaskSchema.parse(req.body);
+    // 处理逻辑...
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "数据验证失败",
+        details: error.errors,
+      });
+    }
+    // 处理其他错误...
+  }
+});
+```
+
+### 内联 Schema 使用
+
+对于简单验证，可以直接内联使用：
+
+```tsx
+// 简单的内联验证
+const id = z.number().parse(+req.params.id);
+// 或使用强制转换
+const id = z.coerce.number().parse(req.params.id);
+```
+
+这种方法在现有代码库中逐步引入验证特别有用，可以从最关键的端点开始，逐步扩展到整个应用。
+
+---
+
+# 10-client-app-schema-validation
+
+## 客户端验证策略
+
+### 类型共享的初步方案
+
+首先使用"复制粘贴"方法将服务端的 schema 同步到客户端：
+
+```tsx
+// 从服务端复制相同的 schema 定义
+const taskSchema = z.object({
+  id: z.number(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  completed: z.boolean().default(false),
+});
+
+const taskListSchema = z.array(taskSchema);
+type Task = z.infer<typeof taskSchema>;
+```
+
+**临时性解决方案：**
+
+- 快速验证概念可行性
+- 为后续的共享策略建立基础
+- 暴露同步维护的问题
+
+### API 响应验证
+
+```tsx
+export async function fetchTasks(): Promise<Task[]> {
+  const response = await fetch("/api/tasks");
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  // 验证 API 响应格式
+  const tasks = taskListSchema.parse(data);
+
+  return tasks; // 现在具有完整类型安全
+}
+```
+
+**关键改进：**
+
+- `response.json()` 不再返回 `any`
+- 运行时验证确保数据格式正确
+- 验证失败时提供明确的错误信息
+
+### 从信任到验证的转变
+
+**之前的问题：**
+
+```tsx
+// 基于信任的方法
+async function fetchTasks(): Promise<Task[]> {
+  const response = await fetch("/api/tasks");
+  return response.json(); // any 类型，纯粹的信任
+}
+```
+
+**现在的解决方案：**
+
+```tsx
+// 验证后信任的方法
+async function fetchTasks(): Promise<Task[]> {
+  const response = await fetch("/api/tasks");
+  const data = await response.json();
+  return taskListSchema.parse(data); // 验证后确保类型安全
+}
+```
+
+## 验证失败处理策略
+
+### 主动失败 vs 静默错误
+
+```tsx
+// 主动失败：快速发现问题
+try {
+  const tasks = await fetchTasks();
+  // 确保是正确的数据格式
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    // API 返回了意外的数据格式
+    console.error("API 数据格式错误:", error.errors);
+    // 显示友好的错误信息给用户
+  }
+  throw error; // 重新抛出，让上层处理
+}
+```
+
+**优势：**
+
+- 数据格式问题立即暴露
+- 提供详细的错误上下文
+- 防止静默的数据损坏
+
+### 类型推导的自动化
+
+```tsx
+// 不需要显式声明返回类型
+export async function fetchTasks() {
+  // TypeScript 自动推导为 Promise<Task[]>
+  const response = await fetch("/api/tasks");
+  const data = await response.json();
+  return taskListSchema.parse(data);
+}
+```
+
+## 测试友好的副作用
+
+### 自动化测试的好处
+
+schema 验证为测试提供了额外的保障：
+
+- 测试数据必须符合 schema
+- API 模拟也必须返回正确格式
+- 重构时类型不匹配立即暴露
+
+### 开发时的快速反馈
+
+- 后端 API 变更立即在前端暴露
+- 数据格式不一致时快速失败
+- 减少调试时间和生产环境错误
+
+## 下一步优化方向
+
+当前的复制粘贴方法暴露了几个需要解决的问题：
+
+1. **同步维护负担**：schema 变更需要手动同步
+2. **版本不一致风险**：前后端 schema 可能出现分歧
+3. **代码重复**：相同的 schema 在多处定义
+
+后续课程将介绍更优雅的共享策略，包括：
+
+- 共享包/库的方案
+- 自动生成和同步机制
+- 基于 OpenAPI/Swagger 的合约优先开发
